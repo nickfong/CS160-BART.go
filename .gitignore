@@ -13,3 +13,10 @@ hs_err_pid*
 
 # VIM
 *.swp
+.gradle
+/local.properties
+/.idea/workspace.xml
+/.idea/libraries
+.DS_Store
+/build
+/captures
