@@ -31,6 +31,7 @@ other person (ideally two) should look at your code and provide feedback before
 being merged in to master.  Once someone else has looked at and tested your
 code, it can be merged in to master.  If you're not comfortable doing this, feel
 free to ping someone else to do it for you.
+
 1. Update the branch: `git pull --rebase`
 1. Checkout to master: `git checkout master`
 1. Update master: `git pull --rebase`
