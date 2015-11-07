@@ -45,3 +45,30 @@ on that branch, and also helps to mark where branches were merged in to master,
 making reverting that pesky feature that's preventing us from deploying trivial.
 It also makes the commit tree really easy to read (and pretty!), which is always
 a plus.
+
+#### Commit Messages
+This doesn't *really* matter that much, but it helps whoever's code reviewing
+your code figure out what you were trying to do.  Shamelessly stolen from my
+Git conventions writeup from the project I ran this past summer:
+
+   In the commit message, write a short (<50 character) summary of what changes
+   the commit contains.  You should also write your subject line in the
+   imperative mood.  A great way to test to see if you're doing things right is
+   to prepend "Applying this commit will [your summary here]".  Note that this
+   works for the above commit message: "Applying this commit will fix list and
+   force calculation".  If the commit summary read "Fixed particle list and
+   force calculation", the sentence would read "Applying this commit will fixed
+   particle list and force calculation", which is obviously grammatically
+   incorrect.  Then write the body of the commit -- a more detailed (perhaps
+   bulleted) more detailed list of changes.  Be sure that your text is wrapped
+   at 72 characters and that you leave a blank line between the summary and
+   body.  For example:
+   ```
+   Fix particle list and force calculation
+
+   - Make particles a static class variable
+   - Check if particle is self
+   - Fix division by zero error in calculate_force
+
+   ```
+
