@@ -97,28 +97,38 @@ public class MainActivity extends Activity {
         LatLng downtownBerk = new LatLng(37.869867, -122.268045);
         LatLng dublinPleas = new LatLng(37.701695, -121.900367);
 
-        /*
-        LatLng  = new LatLng(,);
-        LatLng  = new LatLng(,);
-        LatLng  = new LatLng(,);
-        LatLng  = new LatLng(,);
-        LatLng  = new LatLng(,);
-        LatLng  = new LatLng(,);
-        LatLng  = new LatLng(,);
-        LatLng  = new LatLng(,);
-        LatLng  = new LatLng(,);
-        LatLng  = new LatLng(,);
-        LatLng  = new LatLng(,);
-        LatLng  = new LatLng(,);
-        LatLng  = new LatLng(,);
-        LatLng  = new LatLng(,);
-        LatLng  = new LatLng(,);
-        LatLng  = new LatLng(,);
-        LatLng  = new LatLng(,);
-        LatLng  = new LatLng(,);
-        LatLng  = new LatLng(,);
-        LatLng  = new LatLng(,);
-        */
+        LatLng ecDelNorte = new LatLng(37.925655, -122.317269);
+        LatLng ecPlaza = new LatLng(37.9030588, -122.2992715);
+        LatLng embarcadero = new LatLng(37.792976, -122.396742);
+        LatLng fremont = new LatLng(37.557355, -121.9764);
+        LatLng fruitvale = new LatLng(37.774963, -122.224274);
+        LatLng glenPark= new LatLng(37.732921, -122.434092);
+        LatLng hayward = new LatLng(37.670399, -122.087967);
+        LatLng lafayette = new LatLng(37.893394, -122.123801);
+        LatLng lakeMerritt = new LatLng(37.797484, -122.265609);
+        LatLng macArthur = new LatLng(37.828415, -122.267227);
+        LatLng millbrae = new LatLng(37.599787, -122.38666);
+        LatLng montgomery = new LatLng(37.789256, -122.401407);
+        LatLng nBerk = new LatLng(37.87404, -122.283451);
+        LatLng nConcord = new LatLng(38.003275, -122.024597);
+        LatLng oakAir = new LatLng(37.71297174, -122.21244024);
+        LatLng orinda = new LatLng(37.87836087, -122.1837911);
+        LatLng pittsBay = new LatLng(38.018914, -121.945154);
+        LatLng pHilCC = new LatLng(37.928403, -122.056013);
+        LatLng powell = new LatLng(37.784991, -122.406857);
+        LatLng richmond = new LatLng(37.936887, -122.353165);
+        LatLng rockridge = new LatLng(37.844601, -122.251793);
+        LatLng sanBruno = new LatLng(37.637753, -122.416038);
+        LatLng sfAir = new LatLng(37.616035, -122.392612);
+        LatLng sanLeandro = new LatLng(37.72261921, -122.1613112);
+        LatLng sHayward = new LatLng(37.63479954, -122.0575506);
+        LatLng sSF = new LatLng(37.664174, -122.444116);
+        LatLng unionCity = new LatLng(37.591208, -122.017867);
+        LatLng walCreek = new LatLng(37.905628, -122.067423);
+        LatLng wDublinPleas = new LatLng(37.699759, -121.928099);
+        LatLng wOak = new LatLng(37.80467476, -122.2945822);
+
+
 
 
         stationMap.put("12th St. Oakland City Center", oak12thSt);
@@ -137,27 +147,38 @@ public class MainActivity extends Activity {
         stationMap.put("Downtown Berkeley", downtownBerk);
         stationMap.put("Dublin/Pleasanton", dublinPleas);
 
-        /*
-        stationMap.put("", );
-        stationMap.put("", );
-        stationMap.put("", );
-        stationMap.put("", );
-        stationMap.put("", );
-        stationMap.put("", );
-        stationMap.put("", );
-        stationMap.put("", );
-        stationMap.put("", );
-        stationMap.put("", );
-        stationMap.put("", );
-        stationMap.put("", );
-        stationMap.put("", );
-        stationMap.put("", );
-        stationMap.put("", );
-        stationMap.put("", );
-        stationMap.put("", );
-        stationMap.put("", );
-        stationMap.put("", );
-        */
+
+        stationMap.put("El Cerrito del Norte", ecDelNorte);
+        stationMap.put("El Cerrito Plaza", ecPlaza);
+        stationMap.put("Embarcadero", embarcadero);
+        stationMap.put("Fremont", fremont);
+        stationMap.put("Fruitvale", fruitvale);
+        stationMap.put("Glen Park", glenPark);
+        stationMap.put("Hayward", hayward);
+        stationMap.put("Lafayette", lafayette);
+        stationMap.put("Lake Merritt", lakeMerritt);
+        stationMap.put("MacArthur", macArthur);
+        stationMap.put("Millbrae", millbrae);
+        stationMap.put("Montgomery", montgomery);
+        stationMap.put("North Berkeley", nBerk);
+        stationMap.put("North Concord", nConcord);
+        stationMap.put("Oakland Int'l Airport", oakAir);
+        stationMap.put("Orinda", orinda);
+        stationMap.put("Pittsburg/Bay Point", pittsBay);
+        stationMap.put("Pleasant Hill/Contra Costa Centre", pHilCC);
+        stationMap.put("Powell St.", powell);
+        stationMap.put("Richmond", richmond);
+        stationMap.put("Rockridge", rockridge);
+        stationMap.put("San Bruno", sanBruno);
+        stationMap.put("San Francisco Int'l Airport", sfAir);
+        stationMap.put("San Leandro", sanLeandro);
+        stationMap.put("South Hayward", sHayward);
+        stationMap.put("South San Francisco", sSF);
+        stationMap.put("Union City", unionCity);
+        stationMap.put("Walnut Creek", walCreek);
+        stationMap.put("West Dublin/Pleasanton", wDublinPleas);
+        stationMap.put("West Oakland", wOak);
+
 
         return stationMap;
     }
