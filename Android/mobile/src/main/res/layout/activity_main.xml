@@ -14,8 +14,17 @@
         android:text="@string/map_tab_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:gravity="center"
+        android:layout_gravity="center"
         android:onClick="onClickMapTab"
         android:clickable="true"/>
+
+    <TextView
+        android:id="@+id/helptext_for_main"
+        android:text="@string/helptext_main"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:textStyle="italic"
+        />
 
 </LinearLayout>
