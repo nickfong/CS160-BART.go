@@ -4,27 +4,49 @@ import android.app.Activity;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
-public class MapActivity extends Activity {
+public class MapActivity extends Activity implements OnMapReadyCallback {
 
+    //////////////////////////////////////////////////
+    // GLOBAL VARS
+    //////////////////////////////////////////////////
     TextView testTV1;
     TextView testTV2;
     HashMap<String, LatLng> stationHashMap;
 
+
+    //////////////////////////////////////////////////
+    // OVERRIDDEN METHODS O
+    //////////////////////////////////////////////////
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
-        getAndSetStations();
+
+        setStations();
         displayTestVals();
+
+        MapFragment mapFragment = (MapFragment) getFragmentManager()
+                .findFragmentById(R.id.mapFrag);
+        mapFragment.getMapAsync(this);
+
     }
 
     @Override
@@ -49,11 +71,49 @@ public class MapActivity extends Activity {
         return super.onOptionsItemSelected(item);
     }
 
-    /* Returns station names as a Set<String>. */
-    public Set<String>  getAndSetStations() {
+    @Override
+    public void onMapReady(GoogleMap map) {
+        Log.d("map", "** StationHashMap:  " + stationHashMap);
+        Log.d("map", "** Oakland LatLng:  " + stationHashMap.get("12th St.Oakland City Center"));
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                new LatLng(37.732026, -122.183038), (float) 9.5));
+                /*getStationLatLng("12th St. Oakland City Center"), 9));*/
+
+        // You can customize the marker image using images bundled with
+        // your app, or dynamically generated bitmaps.
+        Set<Map.Entry<String, LatLng>> entries = stationHashMap.entrySet();
+
+        Iterator<Map.Entry<String, LatLng>> iter = entries.iterator();
+
+        for (int i = 0; i < stationHashMap.size(); i++) {
+            Map.Entry<String, LatLng> entry = iter.next();
+            LatLng val = entry.getValue();
+            // String key = entry.getKey();
+            // String latStr = String.valueOf(val.latitude);
+            // String lngStr = String.valueOf(val.longitude);
+
+            map.addMarker(new MarkerOptions()
+                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.bart_blueback_png16))
+                /*.anchor(0.0f, 1.0f)*/ // Anchors the marker on the bottom left
+                    /*.position(new LatLng(41.889, -87.622)));*/
+                    .position(val));
+        }
+
+    }
+
+
+    //////////////////////////////////////////////////
+    // LAT-LON RETRIEVAL              (HELPER METHODS)
+    //////////////////////////////////////////////////
+    /* Retrieves and sets station-latlng HashMap. */
+    public void  setStations() {
         Intent i = getIntent();
         stationHashMap = (HashMap<String, LatLng>) i.getSerializableExtra("stationsLatLngMap");
-        return stationHashMap.keySet();
+    }
+
+    /* Returns station names as a String[]. */
+    public String[] getStations() {
+        return (String[]) stationHashMap.keySet().toArray();
     }
 
     /* Returns station latitutde-longitude as a LatLng. */
