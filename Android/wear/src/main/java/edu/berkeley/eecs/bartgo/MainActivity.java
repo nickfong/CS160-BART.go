@@ -50,6 +50,14 @@ public class MainActivity extends WearableActivity {
         this.registerReceiver(mReceiver, intentFilter);
     }
 
+    @Override
+    protected void onPause() {
+        // TODO Auto-generated method stub
+        super.onPause();
+        //unregister our receiver
+        this.unregisterReceiver(this.mReceiver);
+    }
+
 
     @Override
     public void onEnterAmbient(Bundle ambientDetails) {
