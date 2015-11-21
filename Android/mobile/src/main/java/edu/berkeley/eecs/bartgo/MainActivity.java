@@ -7,8 +7,17 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.content.Intent;
+import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+
+import com.google.android.gms.maps.model.LatLng;
+
+import java.io.Serializable;
+import java.util.HashMap;
 
 public class MainActivity extends Activity {
     BartService mBService;
@@ -64,4 +73,24 @@ public class MainActivity extends Activity {
             mBound = false;
         }
     };
+
+    /* Returns a HashMap between station names and
+     * latitude-longitude coordinates.
+     */
+    public HashMap<String, LatLng> getStationLatLng() {
+        // Hardcoded dummy data
+        LatLng oak12thSt = new LatLng(37.803664, -122.271604);
+        LatLng mission16thSt = new LatLng(37.765062, -122.419694);
+
+        HashMap<String,LatLng> stationMap = new HashMap<>();
+        stationMap.put("12th St. Oakland City Center", oak12thSt);
+        stationMap.put("16th St. Mission", mission16thSt);
+
+        return stationMap;
+    }
+    public void onClickMapTab(View view) {
+        Intent intentMapTab = new Intent(this, MapActivity.class);
+        intentMapTab.putExtra("stationsLatLngMap", getStationLatLng());
+        startActivity(intentMapTab);
+    }
 }

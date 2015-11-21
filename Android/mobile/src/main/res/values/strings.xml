@@ -1,6 +1,11 @@
 <resources>
     <string name="app_name">BART.GO</string>
 
-    <string name="hello_world">Hello world!</string>
+    <!--<string name="hello_world">Hello world!</string>-->
     <string name="action_settings">Settings</string>
+    <string name="map_tab_label">Map</string>
+    <string name="title_activity_map">MapActivity</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="placeholder">Placeholder!</string>
 </resources>
