@@ -1,5 +1,6 @@
 package edu.berkeley.eecs.bartgo;
 
+import java.util.Calendar;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
@@ -26,7 +27,14 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
-
+import android.os.Handler;
+import android.location.Location;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.wearable.MessageApi;
+import com.google.android.gms.wearable.Node;
+import com.google.android.gms.wearable.NodeApi;
+import com.google.android.gms.wearable.Wearable;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
@@ -35,7 +43,6 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -67,6 +74,14 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
     ////////////////////////////////////////////////////////////////////////////////
     // OVERRIDDEN METHODS (GENERAL)
     ////////////////////////////////////////////////////////////////////////////////
+    private GoogleApiClient mApiClient;
+    private double currLat;
+    private double currLong;
+    private double trainLat = 37.869914; // Placeholder for Berkeley station
+    private double trainLong = -122.268026; // Ditto
+    private final String REFRESH_DATA = "/refresh_data";
+    private final int fetchInterval = 5000; // Update interval in milliseconds
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -184,6 +199,70 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
             }
         });
 
+        mApiClient = new GoogleApiClient.Builder( this )
+                .addApi( Wearable.API )
+                .addApi(LocationServices.API)
+                .addConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks() {
+                    @Override
+                    public void onConnected(Bundle connectionHint) {
+                        Location mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
+                                mApiClient);
+                        if (mLastLocation != null) {
+                            currLat = mLastLocation.getLatitude();
+                            currLong = mLastLocation.getLongitude();
+                        }
+                        refresh();
+                    }
+
+                    @Override
+                    public void onConnectionSuspended(int cause) {
+                    }
+                })
+                .build();
+        mApiClient.connect();
+    }
+
+    private void sendMessage( final String path, final String text ) {
+        new Thread( new Runnable() {
+            @Override
+            public void run() {
+                NodeApi.GetConnectedNodesResult nodes = Wearable.NodeApi.getConnectedNodes( mApiClient ).await();
+                for(Node node : nodes.getNodes()) {
+                    MessageApi.SendMessageResult result = Wearable.MessageApi.sendMessage(
+                            mApiClient, node.getId(), path, text.getBytes() ).await();
+                }
+            }
+        }).start();
+    }
+
+    public void refresh() {
+        final Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            public void run() {
+                Location mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mApiClient);
+                if (mLastLocation != null) {
+                    currLat = mLastLocation.getLatitude();
+                    currLong = mLastLocation.getLongitude();
+                    int distance = getDistance(currLat, currLong);
+                    int secondsRemaining = (int) (distance/1.4); // Average human walking speed is 1.4 m/s
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.add(Calendar.SECOND, secondsRemaining);
+                    sendMessage(REFRESH_DATA, "Dist: " + distance + "m\n" + "ETA: " + calendar.getTime());
+                }
+                handler.postDelayed(this, fetchInterval);
+            }
+        }, fetchInterval);
+    }
+
+    public int getDistance(Double latitude, Double longitude) {
+        double trainLat2 = Math.toRadians(trainLat);
+        double currLat2 = Math.toRadians(latitude);
+        double deltaLong = Math.toRadians(trainLong - longitude);
+        double deltaLat = Math.toRadians(trainLat - latitude);
+        double radius = 6371000;
+        double a = Math.sin(deltaLat/2) * Math.sin(deltaLat/2) + Math.cos(currLat2) * Math.cos(trainLat2) * Math.sin(deltaLong/2) * Math.sin(deltaLong/2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        return (int) (radius * c);
     }
 
     @Override

@@ -31,6 +31,12 @@ public class WatchListenerService extends WearableListenerService {
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             intent.putExtra("start", value);
             startActivity(intent);
+            Vibrator v = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+            v.vibrate(500);
+            Intent i = new Intent("refresh");
+            i.putExtra("msg", value);
+            sendBroadcast(i);
+            Log.d("received", value);
         } else {
             super.onMessageReceived( messageEvent );
         }
