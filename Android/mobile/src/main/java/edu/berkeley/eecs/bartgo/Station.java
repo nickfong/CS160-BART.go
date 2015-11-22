@@ -1,6 +1,6 @@
 package edu.berkeley.eecs.bartgo;
 
-public class station {
+public class Station {
     private String abbreviation;
     private String name;
     private String address;
