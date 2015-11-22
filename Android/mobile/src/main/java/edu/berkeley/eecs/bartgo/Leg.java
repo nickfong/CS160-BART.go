@@ -7,11 +7,13 @@ public class Leg {
     Station endStation;
     String trainDestination;
     ArrayList<Train> trains;
+    public Route route;
 
-    public Leg(Station startStation, Station endStation, String trainDestination) {
+    public Leg(Station startStation, Station endStation, String trainDestination, Route route) {
         this.startStation = startStation;
         this.endStation = endStation;
         this.trainDestination = trainDestination;
+        this.route = route;
         this.trains = null;
     }
 
