@@ -1,10 +1,34 @@
 package edu.berkeley.eecs.bartgo;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class BartService {
     private final static String key = "Q7VS-PJD5-9K8T-DWE9";
+    private HashMap<Integer, Route> routes;
+
+    public ArrayList<Station> BartService() {
+        this.routes = populateRoutes();
+        return populateStations();
+    }
+
+    private HashMap<Integer, Route> populateRoutes() {
+        String call = generateApiCall("routes", null);
+        HashMap<Integer, Route> routes = new HashMap<>();
+        //TODO parse call
+        return routes;
+    }
+
+    /**
+     * The BartService constructor queries the BART API and returns an ArrayList of Station objects
+     * @return an ArrayList of Station objects corresponding to all valid stations
+     */
+    public ArrayList<Station> populateStations() {
+        ArrayList<Station> stations = new ArrayList<Station>();
+        String call = generateApiCall("stns", null);
+        //TODO parse call
+        return stations;
+    }
 
     /**
      * generateApiCall generates the proper API URL for a given command and optional arguments
@@ -24,21 +48,6 @@ public class BartService {
         return call + suffix;
     }
 
-    public ArrayList<Station> BartService() {
-        return populateStations();
-    }
-
-    /**
-     * The BartService constructor queries the BART API and returns an ArrayList of Station objects
-     * @return an ArrayList of Station objects corresponding to all valid stations
-     */
-    public ArrayList<Station> populateStations() {
-        ArrayList<Station> stations = new ArrayList<Station>();
-        String call = generateApiCall("stns", null);
-        //TODO parse call
-        return stations;
-    }
-
     /**
      * Generate a trip between two stations
      * @param startStation is a Station object corresponding to the starting station of the user
@@ -54,18 +63,21 @@ public class BartService {
         //TODO parse call and fix call to Trip constructor
         Trip trip = new Trip(startStation, destinationStation, 0.0f);
 
-        ArrayList<Chain> chains = generateChains(startStation, destinationStation, time);
-        trip.setChains(chains);
+        ArrayList<Legs> legs = generateLegs(startStation, destinationStation, time);
+        trip.setLegs(legs);
 
         return trip;
     }
 
-    public Trip refreshTrip(Trip trip, String time) {
+    public void softRefresh(Trip trip, String time) {
         //TODO Update the trip
-        return trip;
     }
 
-    private ArrayList<Chain> generateChains(Station startStation, Station destinationStation, String time) {
+    public void hardRefresh(Trip trip, String time) {
+        //TODO Update the trip
+    }
+
+    private ArrayList<Legs> generateLegs(Station startStation, Station destinationStation, String time) {
         ArrayList<String> callArgs = new ArrayList<>();
         callArgs.add("orig=" + startStation.getAbbreviation());
         callArgs.add("dest=" + destinationStation.getAbbreviation());
@@ -74,10 +86,33 @@ public class BartService {
         callArgs.add("a=4");    //get 0 trips before the current time
         String call = generateApiCall("depart", callArgs);
 
-        ArrayList<Chain> chains = new ArrayList<>();
-        //TODO parse call and fix call to Trip constructor
+        ArrayList<Legs> legs = new ArrayList<>();
+        //TODO parse call
+        //TODO remove duplicate legs
 
-        return chains;
+        return legs;
+    }
+
+    private ArrayList<Integer> getCrowding(Legs l) {//Station station, String route, String id) {
+        ArrayList<Leg> legs = l.getLegs();
+        ArrayList<String> callArgs = new ArrayList<>();
+        String idString = "";
+        for(int i = 0; i < legs.size(); i++) {
+            assert legs.get(i).route.Id.length() == 2;
+            //TODO assert that the train ID is proper length too
+
+            String station = legs.get(i).startStation.getAbbreviation();
+            String route = legs.get(i).route.Id;
+            String id = "";
+            idString += "Id" + i+1 + "=" + station + route + id + "&";
+        }
+        /* Remove trailing & from string */
+        if (idString.endsWith("&") {
+            idString = idString.substring(0, idString.length()-1);
+        }
+        callArgs.add(idString);
+        String call = generateApiCall("load", callArgs);
+        //TODO parse call
     }
 
     public ArrayList<Advisory> getCurrentAdvisories() {

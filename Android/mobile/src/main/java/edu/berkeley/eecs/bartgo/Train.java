@@ -2,7 +2,7 @@ package edu.berkeley.eecs.bartgo;
 
 public class Train {
     /**
-     *  A train is a specific train within a chain of trains on a trip
+     *  A train is a specific train within a leg of trains on a trip
      */
     private Station trainDestination;
     private Station embarkationStation;

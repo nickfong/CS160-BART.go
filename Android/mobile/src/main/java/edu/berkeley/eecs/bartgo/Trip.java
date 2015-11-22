@@ -6,27 +6,27 @@ public class Trip {
     /**
      *  A trip is a journey from one station to another.  It has a set fare.
      *
-     *  Initially, the trip doesn't have any chains.  Chains are populated
-     *  with the setChains method.
+     *  Initially, the trip doesn't have any legs.  Legs are populated
+     *  with the setLegs method.
      */
     private Station startingStation;
     private Station destinationStation;
     private float fare;
-    private ArrayList<Chain> chains;
+    private ArrayList<Legs> legs;
 
     public Trip(Station start, Station end, float fare) {
         this.startingStation = start;
         this.destinationStation = end;
         this.fare = fare;
-        this.chains = null;
+        this.legs = null;
     }
 
-    protected void setChains(ArrayList<Chain> chains) {
-        this.chains = chains;
+    protected void setLegs(ArrayList<Legs> legs) {
+        this.legs = legs;
     }
 
-    public ArrayList<Chain> getChains() {
-        return this.chains;
+    public ArrayList<Legs> getLegs() {
+        return this.legs;
     }
 
     public float getFare() {
