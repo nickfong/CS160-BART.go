@@ -18,6 +18,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -85,13 +86,9 @@ public class MapActivity extends Activity implements OnMapReadyCallback {
     }
 
     ////////////////////////////////////////////////////////////////////////////////
-    // SAVED-INSTANCE STATE HANDLING
-    ////////////////////////////////////////////////////////////////////////////////
-
-
-    ////////////////////////////////////////////////////////////////////////////////
     // MAP GENERATION
     ////////////////////////////////////////////////////////////////////////////////
+//    LatLng stationSelectedCoords = new LatLng();
     @Override
     public void onMapReady(GoogleMap map) {
         setStations();
@@ -105,7 +102,7 @@ public class MapActivity extends Activity implements OnMapReadyCallback {
 
         for (int i = 0; i < stationHashMap.size(); i++) {
             Map.Entry<String, LatLng> entry = iter.next();
-            final LatLng val = entry.getValue();
+            LatLng val = entry.getValue();
             String stationName = entry.getKey();
 
             map.addMarker(new MarkerOptions()
@@ -121,9 +118,19 @@ public class MapActivity extends Activity implements OnMapReadyCallback {
                     // Simulate long click
                     Intent startNavIntent = new Intent(getBaseContext(), NavActivity.class);
                     // startNavIntent.setFlags((Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP));
-                    // dummy origin data
-                    startNavIntent.putExtra("originLatLng", new LatLng(37.875173, -122.260172));
-                    startNavIntent.putExtra("destLatLng", val);
+                    // dummy origin data --TODO:  REPLACE WITH CURR POS
+//                    startNavIntent.putExtra("originLatLng", new LatLng(37.875173, -122.260172));
+//                    startNavIntent.putExtra("destLatLng", val);
+                    startNavIntent.putExtra("origLat", 37.875173);
+                    startNavIntent.putExtra("origLng", -122.260172);
+
+                    String stationKey = marker.getTitle();
+                    int len = stationKey.length();
+                    stationKey = stationKey.substring(0, len - 5);
+                    LatLng stationLatLng = getStationLatLng(stationKey);
+//                    Log.d(TAG_DEBUG, "******* val lat/lng:  " + val.toString());
+                    startNavIntent.putExtra("destLat", stationLatLng.latitude);
+                    startNavIntent.putExtra("destLng", stationLatLng.longitude);
                     startActivity(startNavIntent);
                 }
 
