@@ -8,6 +8,7 @@
 
     <string name="hello_world">Hello world!</string>
     <string name="placeholder">Placeholder!</string>
-    <string name="helptext_map">Tap the station you would like to navigate to,\nfollowed by the navigation icon at the bottom-right.</string>
+    <string name="helptext_map">Tap a station to view more information.\nLong-tap a station to begin navigation.</string>
     <string name="helptext_main">Tap the "Map" tab to view all stations on a map.</string>
+    <string name="title_activity_nav">NavActivity</string>
 </resources>

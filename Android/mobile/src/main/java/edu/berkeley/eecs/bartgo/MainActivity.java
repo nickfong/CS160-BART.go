@@ -184,6 +184,7 @@ public class MainActivity extends Activity {
     }
     public void onClickMapTab(View view) {
         Intent intentMapTab = new Intent(this, MapActivity.class);
+        // intentMapTab.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         intentMapTab.putExtra("stationsLatLngMap", getStationLatLngMap());
         startActivity(intentMapTab);
     }
