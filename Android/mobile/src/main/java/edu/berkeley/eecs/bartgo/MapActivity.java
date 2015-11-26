@@ -2,6 +2,10 @@ package edu.berkeley.eecs.bartgo;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -89,11 +93,18 @@ public class MapActivity extends Activity implements OnMapReadyCallback {
     // MAP GENERATION
     ////////////////////////////////////////////////////////////////////////////////
 //    LatLng stationSelectedCoords = new LatLng();
+
+    public Bitmap generateIcon(int resId, int scale) {
+        Bitmap b = BitmapFactory.decodeResource(getResources(), resId);
+        Bitmap bScaled = Bitmap.createScaledBitmap(b, b.getWidth() / scale, b.getHeight() / scale, false);
+        return bScaled;
+    }
+
     @Override
     public void onMapReady(GoogleMap map) {
         setStations();
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                new LatLng(37.732026, -122.183038), (float) 9.5));
+                new LatLng(37.804697, -122.201255), (float) 9.5));
 
         // You can customize the marker image using images bundled with
         // your app, or dynamically generated bitmaps.
@@ -106,8 +117,8 @@ public class MapActivity extends Activity implements OnMapReadyCallback {
             String stationName = entry.getKey();
 
             map.addMarker(new MarkerOptions()
-                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.bart_blueback_png16))
-                    /*.anchor(0.0f, 1.0f)*/ // Anchors the marker on the bottom left
+                    .icon(BitmapDescriptorFactory.fromBitmap(generateIcon(R.drawable.marker_bartgo_logo, 2)))
+                    .anchor(0.5f, 1.0f) /*Anchors the marker on the bottom center */
                     .position(val)
                     .title(stationName + " BART")
                     .snippet("<Insert additional station info here!>")
