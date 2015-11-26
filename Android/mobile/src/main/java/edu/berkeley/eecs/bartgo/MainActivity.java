@@ -9,20 +9,21 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
 import com.google.android.gms.maps.model.LatLng;
 
-import java.io.Serializable;
 import java.util.HashMap;
 
 public class MainActivity extends Activity {
     BartService mBService;
     boolean mBound = false;
 
+    ////////////////////////////////////////////////////////////////////////////////
+    // OVERRIDDEN METHODS (GENERAL)
+    ////////////////////////////////////////////////////////////////////////////////
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -76,6 +77,10 @@ public class MainActivity extends Activity {
 
     /* Returns a HashMap between station names and
      * latitude-longitude coordinates.
+     *
+     * TODO--INTEGRATION:  CHANGE TO ACCEPT INPUT FROM NICK'S API DATA
+     *
+     * @return          A HashMap<String, LatLng> station mapping
      */
     public HashMap<String, LatLng> getStationLatLngMap() {
         HashMap<String,LatLng> stationMap = new HashMap<>();
@@ -96,7 +101,6 @@ public class MainActivity extends Activity {
         LatLng dalyCity = new LatLng(37.70612055, -122.4690807);
         LatLng downtownBerk = new LatLng(37.869867, -122.268045);
         LatLng dublinPleas = new LatLng(37.701695, -121.900367);
-
         LatLng ecDelNorte = new LatLng(37.925655, -122.317269);
         LatLng ecPlaza = new LatLng(37.9030588, -122.2992715);
         LatLng embarcadero = new LatLng(37.792976, -122.396742);
@@ -128,9 +132,6 @@ public class MainActivity extends Activity {
         LatLng wDublinPleas = new LatLng(37.699759, -121.928099);
         LatLng wOak = new LatLng(37.80467476, -122.2945822);
 
-
-
-
         stationMap.put("12th St. Oakland City Center", oak12thSt);
         stationMap.put("16th St. Mission", mission16thSt);
         stationMap.put("19th St. Oakland", oak19thSt);
@@ -146,8 +147,6 @@ public class MainActivity extends Activity {
         stationMap.put("Daly City", dalyCity);
         stationMap.put("Downtown Berkeley", downtownBerk);
         stationMap.put("Dublin/Pleasanton", dublinPleas);
-
-
         stationMap.put("El Cerrito del Norte", ecDelNorte);
         stationMap.put("El Cerrito Plaza", ecPlaza);
         stationMap.put("Embarcadero", embarcadero);
@@ -179,12 +178,18 @@ public class MainActivity extends Activity {
         stationMap.put("West Dublin/Pleasanton", wDublinPleas);
         stationMap.put("West Oakland", wOak);
 
-
         return stationMap;
     }
+
+    /**
+     * Transition to MapActivity, which displays the interactive station
+     * selection map, upon the user tapping on the maps tab.
+     *
+     * TODO--INTEGRATION:  SET THE "MAP" TAB TO BE CLICKED TO BE THE VIEW
+     * TODO                REPRESENTING SAID TAB IN MICHAEL'S MOBILE UI.
+     */
     public void onClickMapTab(View view) {
         Intent intentMapTab = new Intent(this, MapActivity.class);
-        // intentMapTab.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         intentMapTab.putExtra("stationsLatLngMap", getStationLatLngMap());
         startActivity(intentMapTab);
     }

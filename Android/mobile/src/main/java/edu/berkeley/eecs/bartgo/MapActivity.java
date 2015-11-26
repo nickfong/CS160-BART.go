@@ -2,16 +2,11 @@ package edu.berkeley.eecs.bartgo;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.TextView;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -22,7 +17,6 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -31,13 +25,13 @@ import java.util.Set;
 public class MapActivity extends Activity implements OnMapReadyCallback {
 
     ////////////////////////////////////////////////////////////////////////////////
-    // GLOBAL VARS
+    // GLOBAL VARS (GENERAL)
     ////////////////////////////////////////////////////////////////////////////////
-    // TextView testTV1;  // FOR TESTING
-    // TextView testTV2;  // FOR TESTING
-//    Intent mapIntent = null;
-    protected final static String TAG_DEBUG = "tag_debug";
+    protected final static String TAG_DEBUG = "tag_debug";  // Was used fo Log.d()
     HashMap<String, LatLng> stationHashMap;
+
+
+
 
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -48,18 +42,14 @@ public class MapActivity extends Activity implements OnMapReadyCallback {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_map);
 
-        // if (mapIntent == null) {
+        // Retrieve stations-latlng hashmap
         setStations();
-        // }
-        // displayTestVals();  // FOR TESTING
 
+        // Generate map
         MapFragment mapFragment = (MapFragment) getFragmentManager()
                 .findFragmentById(R.id.mapFrag);
         mapFragment.getMapAsync(this);
-        Log.d(TAG_DEBUG, "******* onCreate called!");
-
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -67,12 +57,6 @@ public class MapActivity extends Activity implements OnMapReadyCallback {
         getMenuInflater().inflate(R.menu.menu_map, menu);
         return true;
     }
-
-//    @Override
-//    public void onResume() {
-//        super.onResume();
-//        setStations();
-//    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -89,25 +73,47 @@ public class MapActivity extends Activity implements OnMapReadyCallback {
         return super.onOptionsItemSelected(item);
     }
 
+
+
+
+
     ////////////////////////////////////////////////////////////////////////////////
     // MAP GENERATION
     ////////////////////////////////////////////////////////////////////////////////
-//    LatLng stationSelectedCoords = new LatLng();
-
+    /**
+     * Generates a scaled bitmap icon  from an R.drawable element.
+     *
+     * @param   resId   The image id to be used as the icon.  Of the form
+     *                  "R.drawable.image_name"
+     * @param   scale   The "down-scaling" factor.  Ie. width and height are scaled
+     *                  by a factor of 1 / scale.
+     * @return          The scaled bitmap.
+     */
     public Bitmap generateIcon(int resId, int scale) {
         Bitmap b = BitmapFactory.decodeResource(getResources(), resId);
         Bitmap bScaled = Bitmap.createScaledBitmap(b, b.getWidth() / scale, b.getHeight() / scale, false);
         return bScaled;
     }
 
+    /**
+     * Sets map camera zoom and places markers upon the given map's readiness.
+     * Tap: display station name and station details.
+     * Long-Tap: launch turn-by-turn navigation (NavActivity) to selected station.
+     *
+     * TODO--INTEGRATION:  POPULATE STATION DETAILS WITH RELEVANT INFO AS DECIDED BY GROUP
+     * TODO--INTEGRATION:  REPLACE DUMMY ORIGIN LAT/LNG DATA (SEE onMarkerDragStart())
+     * TODO                WITH ACTUAL CURRENT POS CALCULATED IN PATRICK'S MAIN ACTIVITY.
+     *
+     * @param   map     The GoogleMap instance to display.
+     */
     @Override
     public void onMapReady(GoogleMap map) {
-        setStations();
+        // Set camera zoom
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(
                 new LatLng(37.804697, -122.201255), (float) 9.5));
 
-        // You can customize the marker image using images bundled with
-        // your app, or dynamically generated bitmaps.
+        // Iterate through all stations in the sattionHashMap,
+        // generating a Marker for each
         Set<Map.Entry<String, LatLng>> entries = stationHashMap.entrySet();
         Iterator<Map.Entry<String, LatLng>> iter = entries.iterator();
 
@@ -124,80 +130,71 @@ public class MapActivity extends Activity implements OnMapReadyCallback {
                     .snippet("<Insert additional station info here!>")
                     .draggable(true));
             map.setOnMarkerDragListener(new GoogleMap.OnMarkerDragListener() {
+                // Simulate long-click functionality
                 @Override
                 public void onMarkerDragStart(Marker marker) {
-                    // Simulate long click
                     Intent startNavIntent = new Intent(getBaseContext(), NavActivity.class);
-                    // startNavIntent.setFlags((Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP));
-                    // dummy origin data --TODO:  REPLACE WITH CURR POS
-//                    startNavIntent.putExtra("originLatLng", new LatLng(37.875173, -122.260172));
-//                    startNavIntent.putExtra("destLatLng", val);
+                    // dummy origin data
                     startNavIntent.putExtra("origLat", 37.875173);
                     startNavIntent.putExtra("origLng", -122.260172);
 
+                    // Retrieve destination based on marker being long-tapped on
                     String stationKey = marker.getTitle();
                     int len = stationKey.length();
                     stationKey = stationKey.substring(0, len - 5);
                     LatLng stationLatLng = getStationLatLng(stationKey);
-//                    Log.d(TAG_DEBUG, "******* val lat/lng:  " + val.toString());
+
                     startNavIntent.putExtra("destLat", stationLatLng.latitude);
                     startNavIntent.putExtra("destLng", stationLatLng.longitude);
+
                     startActivity(startNavIntent);
                 }
 
                 @Override
                 public void onMarkerDragEnd(Marker marker) {
-                    // Do nothing
+                    // Nothing special to do
                 }
 
                 @Override
                 public void onMarkerDrag(Marker marker) {
-                    // Do nothing
+                    // Do special to do
                 }
             });
         }
 
     }
 
+
+
+
+
     ////////////////////////////////////////////////////////////////////////////////
     // LAT-LON RETRIEVAL                                         (HELPER METHODS) //
     ////////////////////////////////////////////////////////////////////////////////
-    /* Retrieves and sets station-latlng HashMap. */
+    /**
+     * Retrieves and sets global station-latlng HashMap.
+     */
     public void  setStations() {
         Intent i = getIntent();
-        // Intent i = mapIntent;
         stationHashMap = (HashMap<String, LatLng>) i.getSerializableExtra("stationsLatLngMap");
-        if (stationHashMap == null) {
-            Log.d(TAG_DEBUG, "******* stationHashMap:  NULL!");
-        } else {
-            Log.d(TAG_DEBUG, "******* stationHashMap:  NOT null! It's " + stationHashMap.toString());
-        }
     }
 
-    /* Returns station names as a String[]. */
+    /**
+     * Returns an array containing all station names.
+     *
+     * @return          A String[] of all station names, retrieved from global HashMap.
+     */
     public String[] getStations() {
         return (String[]) stationHashMap.keySet().toArray();
     }
 
-    /* Returns station latitutde-longitude as a LatLng. */
+    /**
+     * Returns a station latitutde-longitude coordinates
+     *
+     * @param   name    The station's name.
+     * @return          The station's latitude and longitude, as a LatLng.
+     */
     public LatLng getStationLatLng(String name) {
         return stationHashMap.get(name);
     }
-
-    ////////////////////////////////////////////////////////////////////////////////
-    // FOR DEBUGGING/TESTING
-    ////////////////////////////////////////////////////////////////////////////////
-    /* Displays test strings at top of screen. */
-    /*
-    public void displayTestVals() {
-        testTV1 = (TextView) findViewById(R.id.testOut1);
-        testTV2 = (TextView) findViewById(R.id.testOut2);
-
-        String oakLatLng = getStationLatLng("12th St. Oakland City Center").toString();
-        String missionLatLng = getStationLatLng("16th St. Mission").toString();
-
-        testTV1.setText("12th St. Oakland City Center LatLng:  " + oakLatLng);
-        testTV2.setText("16th St. Mission LatLng:  " + missionLatLng);
-    }
-    */
 }

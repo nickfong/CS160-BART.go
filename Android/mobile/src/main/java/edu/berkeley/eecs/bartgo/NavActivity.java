@@ -3,15 +3,12 @@ package edu.berkeley.eecs.bartgo;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.AsyncTask;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Html;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
-
-import com.google.android.gms.maps.model.LatLng;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -27,13 +24,25 @@ import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 
 public class NavActivity extends Activity {
-    protected final static String TAG_DEBUG = "tag_debug";
+
+    ////////////////////////////////////////////////////////////////////////////////
+    //GLOBAL VARS
+    ////////////////////////////////////////////////////////////////////////////////
+    protected final static String TAG_DEBUG = "tag_debug";  // For Log.d()
     public ArrayList<NavInstruction> navInstructions = null;
 
+
+
+
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // OVERRIDDEN METHODS (GENERAL)
+    ////////////////////////////////////////////////////////////////////////////////
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_nav);
+        // Run sample navigation directions display
         runDemoNav();
     }
 
@@ -59,10 +68,15 @@ public class NavActivity extends Activity {
         return super.onOptionsItemSelected(item);
     }
 
+
+
+
+
     ////////////////////////////////////////////////////////////////////////////////
     // DIRECTIONS QUERY CLASS
     ////////////////////////////////////////////////////////////////////////////////
-    /* A subclass for asynchronously handling navigation querying, as this may
+    /**
+     * A subclass for asynchronously handling navigation querying, as this may
      * potentially be a time consuming task not appropriate for executing on the
      * main UI thread.
      */
@@ -72,6 +86,7 @@ public class NavActivity extends Activity {
             InputStream is = null;
             String jsonString = null;
             try {
+                // Set up Http connection
                 URL url = new URL(myurl[0]);
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setReadTimeout(10000 /* milliseconds */);
@@ -79,7 +94,7 @@ public class NavActivity extends Activity {
                 conn.setRequestMethod("GET");
                 conn.setDoInput(true);
 
-                // Starts the query
+                // Start the query
                 conn.connect();
                 is = conn.getInputStream();
                 BufferedReader buffReader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
@@ -114,15 +129,24 @@ public class NavActivity extends Activity {
         }
 
         @Override
-        protected void onPostExecute(String result) {/* Do nothing. */}
+        protected void onPostExecute(String result) {
+            // Nothing special to do here.
+        }
     }
+
+
+
+
 
     ////////////////////////////////////////////////////////////////////////////////
     // QUERYING FOR DIRECTIONS
     ////////////////////////////////////////////////////////////////////////////////
-    /* Retrieves the start and destination LatLng objects (passed as extras from
+    /**
+     * Retrieves the start and destination LatLng objects (passed as extras from
      * the MapActivity), and generates the appropriate query url for the Google
-     * Maps Directions API
+     * Maps Directions API.  This query assumes walking as the user's mode of transit.
+     *
+     * @return          The query URL, as a String.
      */
     private String generateNavQueryUrlString () {
         Intent i = getIntent();
@@ -131,14 +155,22 @@ public class NavActivity extends Activity {
         String dLat = String.valueOf(i.getDoubleExtra("destLat", 999999));
         String dLng = String.valueOf(i.getDoubleExtra("destLng", 999999));
 
-        // query assumes walking directions
         String url = "https://maps.googleapis.com/maps/api/directions/json?origin=" + oLat + "," + oLng + "&destination=" + dLat + "," + dLng + "&mode=walking&key=AIzaSyBTE2CQqCh-0LXhMyuWS8csfkyhQgF4n4c";
         return url;
     }
-    /* Given the start and destination LatLng objects (passed as intents from the MapActivity)
-     *
+
+    /**
+     * Queries Google Maps Direction API, parses JSON data, and stores directions
+     * into two structures:
+     *      1) A single Html-formatted string, for displaying as a demo.
+     *         (The setting of a TextView to display this is not intended to ship--
+     *         it is merely a demonstration of functionality for dev purposes.)
+     *      2) An ArrayList<NavInstruction>, where NavInstruction is a custom data
+     *         structure storing pertinent navigation instruction information.
+     *         See NavInstruction.java for more information.
      */
     public void runDemoNav() {
+        // Execute query
         String testUrl = generateNavQueryUrlString();
         String jsonResultString = null;
         try {
@@ -154,49 +186,45 @@ public class NavActivity extends Activity {
             return;
         }
 
-        // Parse json file!
+        // Parse JSON file!
         JSONObject query = null;
         try {
             // Retrieve initial JSON Object representing entire query
             query = new JSONObject(jsonResultString);
-            // Log.d(TAG_DEBUG, "******* Printing json object:\n" + query.toString());
-            Log.d(TAG_DEBUG, "******* MEEP!  Parsing JSON, 1 success.");
             // Retrieve the "routes" JSON Array
             JSONArray routes = query.getJSONArray("routes");
-            // Log.d(TAG_DEBUG, "******* Printing json routes object:\n" + routes.toString());
-            Log.d(TAG_DEBUG, "******* MEEP!  Parsing JSON, 2 successes.");
             // Retrieve the first route in "routes" array
             JSONObject route = routes.getJSONObject(0);
-            Log.d(TAG_DEBUG, "******* MEEP!  Parsing JSON, 2.5 successes.");
             // Retrieve the "legs" JSON Object from "routes" object
             JSONArray legs = route.getJSONArray("legs");
-            Log.d(TAG_DEBUG, "******* MEEP!  Parsing JSON, 3 successes.");
             // Retrieve the first leg of the "legs" array
             JSONObject leg = legs.getJSONObject(0);
             // Retrieve the "steps" JSON Array of the leg object
             JSONArray steps = leg.getJSONArray("steps");
-            Log.d(TAG_DEBUG, "******* MEEP!  Parsing JSON, 4 successes.");
 
-            // Iterate through, retrieve "html_instructions" JSON Object from each
+            // Iterate through each navigational step,
+            // extracting instruction information from each
             int len = steps.length();
             StringBuilder sbNav = new StringBuilder();
             navInstructions = new ArrayList<>();
-            Log.d(TAG_DEBUG, "******* MEEP!  Parsing JSON, 5 successes.");
 
-            // Access each element in the steps array, extract "html_instructions" string
             for (int i = 0; i < len; i++) {
                 // Retrieve ith step in steps
                 JSONObject step = steps.getJSONObject(i);
                 String instructText = step.getString("html_instructions");
                 String instructDist=  step.getJSONObject("distance").getString("text");
                 String instructionDur = step.getJSONObject("duration").getString("text");
-                NavInstruction navInst = new NavInstruction(instructText, instructDist, instructionDur);
+
+                // Add to demo string
                 sbNav.append(instructText +  " (" + instructDist + ", " + instructionDur + ")<br>");
+
+                // Add to custom data structure
+                NavInstruction navInst = new NavInstruction(instructText, instructDist, instructionDur);
                 navInstructions.add(navInst);
             }
-            String nav = sbNav.toString();
-            Log.d(TAG_DEBUG, "******* MEEP!  Parsing JSON, 6 successes.");
 
+            // Set demo TextView
+            String nav = sbNav.toString();
             TextView tv = (TextView) findViewById(R.id.testNavOut);
             tv.setText(Html.fromHtml(nav));
         } catch (JSONException e) {
