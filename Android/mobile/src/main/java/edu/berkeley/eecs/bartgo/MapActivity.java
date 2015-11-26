@@ -112,7 +112,7 @@ public class MapActivity extends Activity implements OnMapReadyCallback {
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(
                 new LatLng(37.804697, -122.201255), (float) 9.5));
 
-        // Iterate through all stations in the sattionHashMap,
+        // Iterate through all stations in the stationHashMap,
         // generating a Marker for each
         Set<Map.Entry<String, LatLng>> entries = stationHashMap.entrySet();
         Iterator<Map.Entry<String, LatLng>> iter = entries.iterator();
@@ -123,7 +123,7 @@ public class MapActivity extends Activity implements OnMapReadyCallback {
             String stationName = entry.getKey();
 
             map.addMarker(new MarkerOptions()
-                    .icon(BitmapDescriptorFactory.fromBitmap(generateIcon(R.drawable.marker_bartgo_logo, 2)))
+                    .icon(BitmapDescriptorFactory.fromBitmap(generateIcon(R.drawable.marker_bartgo_logo_round, 2)))
                     .anchor(0.5f, 1.0f) /*Anchors the marker on the bottom center */
                     .position(val)
                     .title(stationName + " BART")
