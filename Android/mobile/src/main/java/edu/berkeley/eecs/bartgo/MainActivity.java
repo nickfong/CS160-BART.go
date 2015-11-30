@@ -24,7 +24,9 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -74,6 +76,7 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
         final ListView listView = (ListView) findViewById(R.id.listView);
         final MapFragment mapFrag = ((MapFragment) getFragmentManager().findFragmentById(R.id.mapFrag));
         final FrameLayout mapFrame = (FrameLayout) findViewById(R.id.mapFrame);
+        final RelativeLayout mapFrameWrap = (RelativeLayout) findViewById(R.id.mapFrameWrap);
         final Button allStationsButton = (Button) findViewById(R.id.allStations);
         final Button favoritesButton = (Button) findViewById(R.id.favoritesButton);
         final Button mapButton = (Button) findViewById(R.id.mapButton);
@@ -134,7 +137,8 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
                 currList = "All";
                 listView.setAdapter(setAllStations());
                 // mapFrag.getView().setVisibility(View.INVISIBLE);
-                mapFrame.setVisibility(View.INVISIBLE);
+//                mapFrame.setVisibility(View.INVISIBLE);
+                mapFrameWrap.setVisibility(View.INVISIBLE);
                 underlineAll.setBackgroundColor(Color.parseColor("#F39C12"));
                 underlineMap.setBackgroundColor(Color.parseColor("#2C3E50"));
                 underlineFavorites.setBackgroundColor(Color.parseColor("#2C3E50"));
@@ -150,7 +154,8 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
                 currList = "Favorites";
                 listView.setAdapter(setFavoriteStations());
 //                mapFrag.getView().setVisibility(View.INVISIBLE);
-                mapFrame.setVisibility(View.INVISIBLE);
+//                mapFrame.setVisibility(View.INVISIBLE);
+                mapFrameWrap.setVisibility(View.INVISIBLE);
                 underlineFavorites.setBackgroundColor(Color.parseColor("#F39C12"));
                 underlineAll.setBackgroundColor(Color.parseColor("#2C3E50"));
                 underlineMap.setBackgroundColor(Color.parseColor("#2C3E50"));
@@ -165,7 +170,8 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
             public void onClick(View v) {
                 listView.setAdapter(clearStations());
 //                mapFrag.getView().setVisibility(View.VISIBLE);
-                mapFrame.setVisibility(View.VISIBLE);
+//                mapFrame.setVisibility(View.VISIBLE);
+                mapFrameWrap.setVisibility(View.VISIBLE);
                 underlineMap.setBackgroundColor(Color.parseColor("#F39C12"));
                 underlineAll.setBackgroundColor(Color.parseColor("#2C3E50"));
                 underlineFavorites.setBackgroundColor(Color.parseColor("#2C3E50"));
