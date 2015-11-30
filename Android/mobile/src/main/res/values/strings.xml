@@ -10,5 +10,9 @@
     <string name="placeholder">Placeholder!</string>
     <string name="helptext_map">Tap a station to view more information.\nLong-tap a station to begin navigation.</string>
     <string name="helptext_main">Tap the "Map" tab to view all stations on a map.</string>
+    <string name="helptext_no_nav">Switch to your SmartWatch!\n[NO NAV]</string>
+
     <string name="title_activity_nav">NavActivity</string>
+    <string name="title_activity_post_selection">postSelection</string>
+    <string name="title_activity_no_nav">NoNavActivity</string>
 </resources>

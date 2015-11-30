@@ -8,18 +8,41 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.TextView;
 
 import com.google.android.gms.maps.model.LatLng;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 
 public class MainActivity extends Activity {
     BartService mBService;
     boolean mBound = false;
+
+    static String currList = "Favorites";
+    HashMap<String, Integer> fullHash = new HashMap<String, Integer>();
+    ArrayList<String> allStationsList;
+    ArrayList<String> favoritesList;
+    ArrayList<Integer> favoritesImageList;
+    HashMap<Integer, String> allStationsHash = new HashMap<Integer, String>();
+    HashMap<Integer, String> favoritesHash = new HashMap<Integer, String>();
+
+    HashMap<String, LatLng> stationLatLngMap;
 
     ////////////////////////////////////////////////////////////////////////////////
     // OVERRIDDEN METHODS (GENERAL)
@@ -27,7 +50,109 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_main);
+
+        Window window = this.getWindow();
+        window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+        window.setStatusBarColor(Color.parseColor("#1e2a37"));
+
+        final ListView listView = (ListView) findViewById(R.id.listView);
+        final ImageView bartMap = (ImageView) findViewById(R.id.bartMap);
+        final Button allStationsButton = (Button) findViewById(R.id.allStations);
+        final Button favoritesButton = (Button) findViewById(R.id.favoritesButton);
+        final Button mapButton = (Button) findViewById(R.id.mapButton);
+        final TextView underlineFavorites = (TextView) findViewById(R.id.underlineFavorites);
+        final TextView underlineAll = (TextView) findViewById(R.id.underlineAll);
+        final TextView underlineMap = (TextView) findViewById(R.id.underlineMap);
+
+        underlineAll.setBackgroundColor(Color.parseColor("#2C3E50"));
+        underlineMap.setBackgroundColor(Color.parseColor("#2C3E50"));
+        allStationsButton.setTextColor(Color.parseColor("#95A5A6"));
+        mapButton.setTextColor(Color.parseColor("#95A5A6"));
+
+        createAllStationsHash();
+        createFavoritesHash();
+        listView.setAdapter(setFavoriteStations());
+        stationLatLngMap = getStationLatLngMap();
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                String dest = "";
+                if (MainActivity.currList == "All") {
+                    dest = allStationsHash.get(position);
+                }
+                else {
+                    dest = favoritesHash.get(position);
+                }
+
+                // Prepare extras from data (ie. the selected station)
+                LatLng destLatLng = stationLatLngMap.get(dest);
+                Double destLat = destLatLng.latitude;
+                Double destLng = destLatLng.longitude;
+                // Dummy origin data
+                Double origLat = 37.875173;
+                Double origLng = -122.260172;
+
+                // Create post-selection intent and put extras
+                Intent postSelection = new Intent();
+                postSelection.setClass(view.getContext(), postSelection.class);
+                postSelection.putExtra("destName", dest);
+                postSelection.putExtra("destLat", destLat);
+                postSelection.putExtra("destLng", destLng);
+                postSelection.putExtra("origLat", origLat);
+                postSelection.putExtra("origLng", origLng);
+                startActivityForResult(postSelection, 1);
+            }
+        });
+
+        allStationsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                currList = "All";
+                listView.setAdapter(setAllStations());
+                bartMap.setVisibility(View.INVISIBLE);
+                underlineAll.setBackgroundColor(Color.parseColor("#F39C12"));
+                underlineMap.setBackgroundColor(Color.parseColor("#2C3E50"));
+                underlineFavorites.setBackgroundColor(Color.parseColor("#2C3E50"));
+                allStationsButton.setTextColor(Color.parseColor("#F39C12"));
+                favoritesButton.setTextColor(Color.parseColor("#95A5A6"));
+                mapButton.setTextColor(Color.parseColor("#95A5A6"));
+            }
+        });
+
+        favoritesButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                currList = "Favorites";
+                listView.setAdapter(setFavoriteStations());
+                bartMap.setVisibility(View.INVISIBLE);
+                underlineFavorites.setBackgroundColor(Color.parseColor("#F39C12"));
+                underlineAll.setBackgroundColor(Color.parseColor("#2C3E50"));
+                underlineMap.setBackgroundColor(Color.parseColor("#2C3E50"));
+                favoritesButton.setTextColor(Color.parseColor("#F39C12"));
+                allStationsButton.setTextColor(Color.parseColor("#95A5A6"));
+                mapButton.setTextColor(Color.parseColor("#95A5A6"));
+            }
+        });
+
+        mapButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+//                listView.setAdapter(clearStations());
+//                bartMap.setVisibility(View.VISIBLE);
+//                underlineMap.setBackgroundColor(Color.parseColor("#F39C12"));
+//                underlineAll.setBackgroundColor(Color.parseColor("#2C3E50"));
+//                underlineFavorites.setBackgroundColor(Color.parseColor("#2C3E50"));
+//                mapButton.setTextColor(Color.parseColor("#F39C12"));
+//                favoritesButton.setTextColor(Color.parseColor("#95A5A6"));
+//                allStationsButton.setTextColor(Color.parseColor("#95A5A6"));
+                onClickMapTab(mapButton);
+            }
+        });
+
     }
 
     @Override
@@ -85,7 +210,7 @@ public class MainActivity extends Activity {
     public HashMap<String, LatLng> getStationLatLngMap() {
         HashMap<String,LatLng> stationMap = new HashMap<>();
 
-        // Hardcoded dummy data
+        // Hardcoded station data
         LatLng oak12thSt = new LatLng(37.803664, -122.271604);
         LatLng mission16thSt = new LatLng(37.765062, -122.419694);
         LatLng oak19thSt = new LatLng(37.80787, -122.269029);
@@ -158,9 +283,9 @@ public class MainActivity extends Activity {
         stationMap.put("Lake Merritt", lakeMerritt);
         stationMap.put("MacArthur", macArthur);
         stationMap.put("Millbrae", millbrae);
-        stationMap.put("Montgomery", montgomery);
+        stationMap.put("Montgomery St.", montgomery);
         stationMap.put("North Berkeley", nBerk);
-        stationMap.put("North Concord", nConcord);
+        stationMap.put("North Concord/Martinez", nConcord);
         stationMap.put("Oakland Int'l Airport", oakAir);
         stationMap.put("Orinda", orinda);
         stationMap.put("Pittsburg/Bay Point", pittsBay);
@@ -184,13 +309,201 @@ public class MainActivity extends Activity {
     /**
      * Transition to MapActivity, which displays the interactive station
      * selection map, upon the user tapping on the maps tab.
-     *
-     * TODO--INTEGRATION:  SET THE "MAP" TAB TO BE CLICKED TO BE THE VIEW
-     * TODO                REPRESENTING SAID TAB IN MICHAEL'S MOBILE UI.
      */
     public void onClickMapTab(View view) {
         Intent intentMapTab = new Intent(this, MapActivity.class);
-        intentMapTab.putExtra("stationsLatLngMap", getStationLatLngMap());
+        intentMapTab.putExtra("stationsLatLngMap", stationLatLngMap);
         startActivity(intentMapTab);
     }
+
+
+
+
+
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // MOBILE UI:  CUSTOM LIST GENERATOR
+    ////////////////////////////////////////////////////////////////////////////////
+    public class CustomList extends ArrayAdapter<String> {
+
+        private final Activity context;
+        private final ArrayList<String> web;
+        private final ArrayList<Integer> imageId;
+        public CustomList (Activity context,
+                           ArrayList<String> web, ArrayList<Integer> imageId) {
+            super(context, R.layout.simple_list_item_1, web);
+            this.context = context;
+            this.web = web;
+            this.imageId = imageId;
+
+        }
+        @Override
+        public View getView(final int position, View view, ViewGroup parent) {
+            LayoutInflater inflater = context.getLayoutInflater();
+            View rowView= inflater.inflate(R.layout.simple_list_item_1, null, true);
+            TextView txtTitle = (TextView) rowView.findViewById(R.id.txt);
+
+            final ImageView imageView = (ImageView) rowView.findViewById(R.id.img);
+            txtTitle.setText(web.get(position));
+
+            imageView.setImageResource(imageId.get(position));
+            imageView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (currList == "All") {
+                        boolean notStarred = true;
+                        boolean imgChanged = false;
+                        String temp = "";
+                        for (String station : favoritesList) {
+                            if (allStationsHash.get(position) == station) {
+                                temp = station;
+                                imageView.setImageResource(R.drawable.graystar);
+                                imgChanged = true;
+                                notStarred = false;
+                            }
+                        }
+                        if (temp != "") {
+                            favoritesList.remove(temp);
+                        }
+                        if (imgChanged == false && notStarred) {
+                            favoritesList.add(allStationsHash.get(position));
+                            imageView.setImageResource(R.drawable.star);
+                            imgChanged = true;
+                        }
+                    }
+                }
+            });
+            return rowView;
+        }
+    }
+
+
+
+
+
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // MOBILE UI:  CREATION METHODS
+    ////////////////////////////////////////////////////////////////////////////////
+    /**
+     * TODO--INTEGRATION:  CHANGE TO ACCEPT INPUT FROM NICK'S API DATA
+     *
+     */
+    public void createAllStationsHash() {
+        // Hard-coded station data
+        allStationsList =  new ArrayList<>(45);
+        allStationsList.add("12th St. Oakland City Center");
+        allStationsList.add("16th St. Mission");
+        allStationsList.add("19th St. Oakland");
+        allStationsList.add("24th St. Mission");
+        allStationsList.add("Ashby");
+        allStationsList.add("Balboa Park");
+        allStationsList.add("Bay Fair");
+        allStationsList.add("Castro Valley");
+        allStationsList.add("Civic Center/UN Plaza");
+        allStationsList.add("Coliseum");
+        allStationsList.add("Colma");
+        allStationsList.add("Concord");
+        allStationsList.add("Daly City");
+        allStationsList.add("Downtown Berkeley");
+        allStationsList.add("Dublin/Pleasanton");
+        allStationsList.add("El Cerrito del Norte");
+        allStationsList.add("El Cerrito Plaza");
+        allStationsList.add("Embarcadero");
+        allStationsList.add("Fremont");
+        allStationsList.add("Fruitvale");
+        allStationsList.add("Glen Park");
+        allStationsList.add("Hayward");
+        allStationsList.add("Lafayette");
+        allStationsList.add("Lake Merritt");
+        allStationsList.add("MacArthur");
+        allStationsList.add("Millbrae");
+        allStationsList.add("Montgomery St.");
+        allStationsList.add("North Berkeley");
+        allStationsList.add("North Concord/Martinez");
+        allStationsList.add("Oakland Int'l Airport");
+        allStationsList.add("Orinda");
+        allStationsList.add("Pittsburg/Bay Point");
+        allStationsList.add("Pleasant Hill/Contra Costa Centre");
+        allStationsList.add("Powell St.");
+        allStationsList.add("Richmond");
+        allStationsList.add("Rockridge");
+        allStationsList.add("San Bruno");
+        allStationsList.add("San Francisco Int'l Airport");
+        allStationsList.add("San Leandro");
+        allStationsList.add("South Hayward");
+        allStationsList.add("South San Francisco");
+        allStationsList.add("Union City");
+        allStationsList.add("Walnut Creek");
+        allStationsList.add("West Dublin/Pleasanton");
+        allStationsList.add("West Oakland");
+        Collections.sort(allStationsList);
+        int count = 0;
+        for (String station:allStationsList) {
+            allStationsHash.put(count, station);
+            fullHash.put(station, count);
+            count++;
+        }
+    }
+
+    public void createFavoritesHash() {
+        // Hardcoded (intended as default?) data
+        favoritesList =  new ArrayList<>(45);
+        favoritesList.add("12th St. Oakland City Center");
+        favoritesList.add("Civic Center/UN Plaza");
+        favoritesList.add("Coliseum");
+        favoritesList.add("Embarcadero");
+        favoritesList.add("Montgomery St.");
+        favoritesList.add("Rockridge");
+        favoritesList.add("San Francisco Int'l Airport");
+        favoritesList.add("Walnut Creek");
+        favoritesList.add("West Dublin/Pleasanton");
+        Collections.sort(favoritesList);
+        int count = 0;
+        for (String station:favoritesList) {
+            favoritesHash.put(count, station);
+            count++;
+        }
+    }
+
+    public CustomList setAllStations(){
+        favoritesImageList = new ArrayList<Integer>(Collections.nCopies(45, R.drawable.graystar));
+        Collections.sort(favoritesList);
+        int count = 0;
+        for (String station:favoritesList) {
+            favoritesHash.put(count, station);
+            count++;
+        }
+        for (String station:favoritesHash.values()) {
+            favoritesImageList.set(fullHash.get(station), R.drawable.star);
+        }
+
+        CustomList adapter = new CustomList(MainActivity.this, allStationsList, favoritesImageList);
+        return adapter;
+    }
+
+    public ArrayAdapter<String> setFavoriteStations(){
+        favoritesImageList = new ArrayList<Integer>(favoritesList.size());
+        Collections.sort(favoritesList);
+        int count = 0;
+        while (count < favoritesList.size()){
+            favoritesImageList.add(R.drawable.star);
+            count++;
+        }
+        count = 0;
+        for (String station:favoritesList) {
+            favoritesHash.put(count, station);
+            count++;
+        }
+
+        CustomList adapter = new CustomList(MainActivity.this, favoritesList, favoritesImageList);
+        return adapter;
+    }
+
+    public ArrayAdapter<String> clearStations(){
+        ArrayList<String> list =  new ArrayList<>(1);
+        ArrayAdapter<String> listAdapter = new ArrayAdapter<String>(this, R.layout.simple_list_item_1, list);
+        return listAdapter;
+    }
+
 }
