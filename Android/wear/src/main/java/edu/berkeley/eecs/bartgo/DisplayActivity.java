@@ -1,17 +1,13 @@
 package edu.berkeley.eecs.bartgo;
 
 import android.content.BroadcastReceiver;
-import android.content.IntentFilter;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
-import android.support.wearable.activity.WearableActivity;
-import android.support.wearable.view.BoxInsetLayout;
-import android.text.TextUtils;
-import android.view.View;
-import android.widget.TextView;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
+import android.support.wearable.activity.WearableActivity;
 import android.support.wearable.view.WatchViewStub;
 import android.util.Log;
 import android.widget.Toast;
@@ -19,7 +15,6 @@ import android.widget.Toast;
 public class DisplayActivity extends WearableActivity {
 
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Locale;
 
 public class DisplayActivity extends WearableActivity {
@@ -27,7 +22,6 @@ public class DisplayActivity extends WearableActivity {
     private static final SimpleDateFormat AMBIENT_DATE_FORMAT =
             new SimpleDateFormat("HH:mm", Locale.US);
 
-    private TextView mTextView;
     private BroadcastReceiver mReceiver;
     private PacingView mPacingView;
     private Context mContext = this;
@@ -45,12 +39,6 @@ public class DisplayActivity extends WearableActivity {
                 mPacingView = (PacingView) stub.findViewById(R.id.pacingView);
 
                 long currMillis = new java.util.Date().getTime();
-//                long[] bartTimes = new long[5];
-//                bartTimes[0] = currMillis + 120000; // departs in 2 min
-//                bartTimes[1] = currMillis + 240000; // departs in 4 min
-//                bartTimes[2] = currMillis + 420000; // departs in 7 min
-//                bartTimes[3] = currMillis + 900000; // departs in 15 min
-//                bartTimes[4] = currMillis + 1140000; // departs in 19 min
                 Intent intent = getIntent();
                 String trainTimes = intent.getStringExtra("start");
                 String[] bartStringTimes = trainTimes.split(" ");
@@ -64,12 +52,12 @@ public class DisplayActivity extends WearableActivity {
                 mPacingView.setOnTouchListener(new OnSwipeTouchListener(mContext) {
                     public void onSwipeBottom() {
                         Toast.makeText(DisplayActivity.this, "Previous Train", Toast.LENGTH_SHORT).show();
-                        mPacingView.onSwipeUp();
+                        mPacingView.onSwipeDown();
                     }
 
                     public void onSwipeTop() {
                         Toast.makeText(DisplayActivity.this, "Next Train", Toast.LENGTH_SHORT).show();
-                        mPacingView.onSwipeDown();
+                        mPacingView.onSwipeUp();
                     }
                 });
             }

@@ -114,8 +114,9 @@ public class PacingView extends View{
         mDepartureTimeInMillis = mBARTDepartureTimes[0];
     }
 
-    /* Update the UI to show a newer estimate of the user's arrival time, also update
-     * newEstimateInMillis: user's new estimate arrival time in milliseconds since UNIX epoch */
+    /* Update the UI to show a newer estimate of the user's arrival time
+     * newEstimateInMillis: user's new estimate arrival time in milliseconds since UNIX epoch
+     * REFRESH THE ENTIRE UI */
     public void updateArrivalTime(long newEstimateInMillis) {
         mArrivalTimeInMillis = newEstimateInMillis;
         mCurrentTimeInMillis = new java.util.Date().getTime();
@@ -139,7 +140,7 @@ public class PacingView extends View{
     }
 
     /* On swipe from top to bottom -> update the UI to show the previous train */
-    public void onSwipeUp() {
+    public void onSwipeDown() {
         if (mCriticalDepartureIndex > 0) {
             mCriticalDepartureIndex -= 1;
             mDepartureTimeInMillis = mBARTDepartureTimes[mCriticalDepartureIndex];
@@ -148,7 +149,7 @@ public class PacingView extends View{
     }
 
     /* On swipe from bottom to top -> update the UI to show the next train */
-    public void onSwipeDown() {
+    public void onSwipeUp() {
         if (mCriticalDepartureIndex + 1 < mBARTDepartureTimes.length) {
             mCriticalDepartureIndex += 1;
             mDepartureTimeInMillis = mBARTDepartureTimes[mCriticalDepartureIndex];
