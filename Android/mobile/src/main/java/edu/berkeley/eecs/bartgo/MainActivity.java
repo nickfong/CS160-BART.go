@@ -8,6 +8,8 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -20,17 +22,28 @@ import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements OnMapReadyCallback {
     BartService mBService;
     boolean mBound = false;
 
@@ -59,7 +72,8 @@ public class MainActivity extends Activity {
         window.setStatusBarColor(Color.parseColor("#1e2a37"));
 
         final ListView listView = (ListView) findViewById(R.id.listView);
-        final ImageView bartMap = (ImageView) findViewById(R.id.bartMap);
+        final MapFragment mapFrag = ((MapFragment) getFragmentManager().findFragmentById(R.id.mapFrag));
+        final FrameLayout mapFrame = (FrameLayout) findViewById(R.id.mapFrame);
         final Button allStationsButton = (Button) findViewById(R.id.allStations);
         final Button favoritesButton = (Button) findViewById(R.id.favoritesButton);
         final Button mapButton = (Button) findViewById(R.id.mapButton);
@@ -77,6 +91,12 @@ public class MainActivity extends Activity {
         listView.setAdapter(setFavoriteStations());
         stationLatLngMap = getStationLatLngMap();
 
+        // Generate mapFragment for Map tab
+        MapFragment mapFragment = (MapFragment) getFragmentManager()
+                .findFragmentById(R.id.mapFrag);
+        mapFragment.getMapAsync(this);
+
+        // Generate Spinners and OnClickListeners
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -113,7 +133,8 @@ public class MainActivity extends Activity {
             public void onClick(View v) {
                 currList = "All";
                 listView.setAdapter(setAllStations());
-                bartMap.setVisibility(View.INVISIBLE);
+                // mapFrag.getView().setVisibility(View.INVISIBLE);
+                mapFrame.setVisibility(View.INVISIBLE);
                 underlineAll.setBackgroundColor(Color.parseColor("#F39C12"));
                 underlineMap.setBackgroundColor(Color.parseColor("#2C3E50"));
                 underlineFavorites.setBackgroundColor(Color.parseColor("#2C3E50"));
@@ -128,7 +149,8 @@ public class MainActivity extends Activity {
             public void onClick(View v) {
                 currList = "Favorites";
                 listView.setAdapter(setFavoriteStations());
-                bartMap.setVisibility(View.INVISIBLE);
+//                mapFrag.getView().setVisibility(View.INVISIBLE);
+                mapFrame.setVisibility(View.INVISIBLE);
                 underlineFavorites.setBackgroundColor(Color.parseColor("#F39C12"));
                 underlineAll.setBackgroundColor(Color.parseColor("#2C3E50"));
                 underlineMap.setBackgroundColor(Color.parseColor("#2C3E50"));
@@ -141,15 +163,16 @@ public class MainActivity extends Activity {
         mapButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                listView.setAdapter(clearStations());
-//                bartMap.setVisibility(View.VISIBLE);
-//                underlineMap.setBackgroundColor(Color.parseColor("#F39C12"));
-//                underlineAll.setBackgroundColor(Color.parseColor("#2C3E50"));
-//                underlineFavorites.setBackgroundColor(Color.parseColor("#2C3E50"));
-//                mapButton.setTextColor(Color.parseColor("#F39C12"));
-//                favoritesButton.setTextColor(Color.parseColor("#95A5A6"));
-//                allStationsButton.setTextColor(Color.parseColor("#95A5A6"));
-                onClickMapTab(mapButton);
+                listView.setAdapter(clearStations());
+//                mapFrag.getView().setVisibility(View.VISIBLE);
+                mapFrame.setVisibility(View.VISIBLE);
+                underlineMap.setBackgroundColor(Color.parseColor("#F39C12"));
+                underlineAll.setBackgroundColor(Color.parseColor("#2C3E50"));
+                underlineFavorites.setBackgroundColor(Color.parseColor("#2C3E50"));
+                mapButton.setTextColor(Color.parseColor("#F39C12"));
+                favoritesButton.setTextColor(Color.parseColor("#95A5A6"));
+                allStationsButton.setTextColor(Color.parseColor("#95A5A6"));
+//                onClickMapTab(mapButton);
             }
         });
 
@@ -315,6 +338,123 @@ public class MainActivity extends Activity {
         intentMapTab.putExtra("stationsLatLngMap", stationLatLngMap);
         startActivity(intentMapTab);
     }
+
+
+
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // MAP GENERATION
+    ////////////////////////////////////////////////////////////////////////////////
+    /**
+     * Generates a scaled bitmap icon  from an R.drawable element.
+     *
+     * @param   resId   The image id to be used as the icon.  Of the form
+     *                  "R.drawable.image_name"
+     * @param   scale   The "down-scaling" factor.  Ie. width and height are scaled
+     *                  by a factor of 1 / scale.
+     * @return          The scaled bitmap.
+     */
+    public Bitmap generateIcon(int resId, int scale) {
+        Bitmap b = BitmapFactory.decodeResource(getResources(), resId);
+        Bitmap bScaled = Bitmap.createScaledBitmap(b, b.getWidth() / scale, b.getHeight() / scale, false);
+        return bScaled;
+    }
+
+    /**
+     * Sets map camera zoom and places markers upon the given map's readiness.
+     * Tap: display station name and station details.
+     * Long-Tap: launch turn-by-turn navigation (NavActivity) to selected station.
+     *
+     * TODO--INTEGRATION:  POPULATE STATION DETAILS WITH RELEVANT INFO AS DECIDED BY GROUP
+     * TODO--INTEGRATION:  REPLACE DUMMY ORIGIN LAT/LNG DATA (SEE onMarkerDragStart())
+     * TODO                WITH ACTUAL CURRENT POS CALCULATED IN PATRICK'S MAIN ACTIVITY.
+     *
+     * @param   map     The GoogleMap instance to display.
+     */
+    @Override
+    public void onMapReady(GoogleMap map) {
+        // Set camera zoom
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                new LatLng(37.804697, -122.201255), (float) 9.5));
+
+        // Iterate through all stations in the stationLatLngMap,
+        // generating a Marker for each
+        Set<Map.Entry<String, LatLng>> entries = stationLatLngMap.entrySet();
+        Iterator<Map.Entry<String, LatLng>> iter = entries.iterator();
+
+        for (int i = 0; i < stationLatLngMap.size(); i++) {
+            Map.Entry<String, LatLng> entry = iter.next();
+            LatLng val = entry.getValue();
+            String stationName = entry.getKey();
+
+            map.addMarker(new MarkerOptions()
+                    .icon(BitmapDescriptorFactory.fromBitmap(generateIcon(R.drawable.marker_bartgo_logo_round, 2)))
+                    .anchor(0.5f, 1.0f) /*Anchors the marker on the bottom center */
+                    .position(val)
+                    .title(stationName + " BART")
+                    .snippet("<Insert additional station info here!>")
+                    .draggable(true));
+            map.setOnMarkerDragListener(new GoogleMap.OnMarkerDragListener() {
+                // Simulate long-click functionality
+                @Override
+                public void onMarkerDragStart(Marker marker) {
+                    Intent startNavIntent = new Intent(getBaseContext(), NavActivity.class);
+                    // dummy origin data
+                    startNavIntent.putExtra("origLat", 37.875173);
+                    startNavIntent.putExtra("origLng", -122.260172);
+
+                    // Retrieve destination based on marker being long-tapped on
+                    String stationKey = marker.getTitle();
+                    int len = stationKey.length();
+                    stationKey = stationKey.substring(0, len - 5);
+                    LatLng stationLatLng = getStationLatLng(stationKey);
+
+                    startNavIntent.putExtra("destLat", stationLatLng.latitude);
+                    startNavIntent.putExtra("destLng", stationLatLng.longitude);
+
+                    startActivity(startNavIntent);
+                }
+
+                @Override
+                public void onMarkerDragEnd(Marker marker) {
+                    // Nothing special to do
+                }
+
+                @Override
+                public void onMarkerDrag(Marker marker) {
+                    // Do special to do
+                }
+            });
+        }
+
+    }
+
+
+
+
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // MAP GENERATION:  LAT-LON RETRIEVAL                        (HELPER METHODS) //
+    ////////////////////////////////////////////////////////////////////////////////
+    /**
+     * Returns an array containing all station names.
+     *
+     * @return          A String[] of all station names, retrieved from global HashMap.
+     */
+    public String[] getStations() {
+        return (String[]) stationLatLngMap.keySet().toArray();
+    }
+
+    /**
+     * Returns a station latitutde-longitude coordinates
+     *
+     * @param   name    The station's name.
+     * @return          The station's latitude and longitude, as a LatLng.
+     */
+    public LatLng getStationLatLng(String name) {
+        return stationLatLngMap.get(name);
+    }
+
 
 
 

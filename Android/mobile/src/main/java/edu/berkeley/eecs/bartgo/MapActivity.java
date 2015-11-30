@@ -27,8 +27,8 @@ public class MapActivity extends Activity implements OnMapReadyCallback {
     ////////////////////////////////////////////////////////////////////////////////
     // GLOBAL VARS (GENERAL)
     ////////////////////////////////////////////////////////////////////////////////
-    protected final static String TAG_DEBUG = "tag_debug";  // Was used fo Log.d()
-    HashMap<String, LatLng> stationHashMap;
+    protected final static String TAG_DEBUG = "tag_debug";  // Was used for Log.d()
+    HashMap<String, LatLng> stationLatLngMap;
 
 
 
@@ -112,12 +112,12 @@ public class MapActivity extends Activity implements OnMapReadyCallback {
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(
                 new LatLng(37.804697, -122.201255), (float) 9.5));
 
-        // Iterate through all stations in the stationHashMap,
+        // Iterate through all stations in the stationLatLngMap,
         // generating a Marker for each
-        Set<Map.Entry<String, LatLng>> entries = stationHashMap.entrySet();
+        Set<Map.Entry<String, LatLng>> entries = stationLatLngMap.entrySet();
         Iterator<Map.Entry<String, LatLng>> iter = entries.iterator();
 
-        for (int i = 0; i < stationHashMap.size(); i++) {
+        for (int i = 0; i < stationLatLngMap.size(); i++) {
             Map.Entry<String, LatLng> entry = iter.next();
             LatLng val = entry.getValue();
             String stationName = entry.getKey();
@@ -176,7 +176,7 @@ public class MapActivity extends Activity implements OnMapReadyCallback {
      */
     public void  setStations() {
         Intent i = getIntent();
-        stationHashMap = (HashMap<String, LatLng>) i.getSerializableExtra("stationsLatLngMap");
+        stationLatLngMap = (HashMap<String, LatLng>) i.getSerializableExtra("stationsLatLngMap");
     }
 
     /**
@@ -185,7 +185,7 @@ public class MapActivity extends Activity implements OnMapReadyCallback {
      * @return          A String[] of all station names, retrieved from global HashMap.
      */
     public String[] getStations() {
-        return (String[]) stationHashMap.keySet().toArray();
+        return (String[]) stationLatLngMap.keySet().toArray();
     }
 
     /**
@@ -195,6 +195,6 @@ public class MapActivity extends Activity implements OnMapReadyCallback {
      * @return          The station's latitude and longitude, as a LatLng.
      */
     public LatLng getStationLatLng(String name) {
-        return stationHashMap.get(name);
+        return stationLatLngMap.get(name);
     }
 }

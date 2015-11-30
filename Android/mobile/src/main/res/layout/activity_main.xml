@@ -111,13 +111,27 @@
         android:layout_marginLeft="12dp"
         tools:listitem="@android:layout/simple_list_item_1" />
 
-    <ImageView
+    <!--<ImageView-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:id="@+id/bartMap"-->
+        <!--android:visibility="invisible"-->
+        <!--android:src="@mipmap/bartmap"-->
+        <!--android:layout_centerVertical="true"-->
+        <!--android:layout_centerHorizontal="true" />-->
+
+    <FrameLayout android:id="@+id/mapFrame"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/bartMap"
         android:visibility="invisible"
-        android:src="@mipmap/bartmap"
+        android:layout_below="@+id/underlineAll"
         android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true" />
+        android:layout_centerHorizontal="true">
+        <fragment android:id="@+id/mapFrag"
+            class="com.google.android.gms.maps.MapFragment"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+    </FrameLayout>
+
 
 </RelativeLayout>
