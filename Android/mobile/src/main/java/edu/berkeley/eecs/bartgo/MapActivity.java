@@ -151,6 +151,10 @@ public class MapActivity extends Activity implements OnMapReadyCallback {
                 }
 
                 @Override
+                public void onMarkerDragEntered(Marker marker) {
+
+                }
+                @Override
                 public void onMarkerDragEnd(Marker marker) {
                     // Nothing special to do
                 }

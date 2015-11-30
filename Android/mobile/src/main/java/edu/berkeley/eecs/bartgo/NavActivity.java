@@ -2,12 +2,15 @@ package edu.berkeley.eecs.bartgo;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Html;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.TextView;
 
 import org.json.JSONArray;
@@ -41,9 +44,17 @@ public class NavActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_nav);
+
+        Window window = this.getWindow();
+        window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+        window.setStatusBarColor(Color.parseColor("#1e2a37"));
+
         // Run sample navigation directions display
-        runDemoNav();
+        runNav();
     }
 
     @Override
@@ -169,7 +180,7 @@ public class NavActivity extends Activity {
      *         structure storing pertinent navigation instruction information.
      *         See NavInstruction.java for more information.
      */
-    public void runDemoNav() {
+    public void runNav() {
         // Execute query
         String testUrl = generateNavQueryUrlString();
         String jsonResultString = null;
@@ -224,9 +235,9 @@ public class NavActivity extends Activity {
             }
 
             // Set demo TextView
-            String nav = sbNav.toString();
-            TextView tv = (TextView) findViewById(R.id.testNavOut);
-            tv.setText(Html.fromHtml(nav));
+            // String nav = sbNav.toString();
+            // TextView tv = (TextView) findViewById(R.id.testNavOut);
+            // tv.setText(Html.fromHtml(nav));
         } catch (JSONException e) {
             Log.e("Error", "JSONException while parsing DirectionsAPI JSON!");
             return;

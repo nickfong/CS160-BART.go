@@ -44,22 +44,21 @@ public class postSelection extends Activity {
                 if (turnByTurnSwitch.isChecked()) {
                     // Create NavActivity intent
                     toNavOrNotToNavIntent = new Intent(getBaseContext(), NavActivity.class);
-                    // Pass origin/destination extras
-                    Double origLat = i.getDoubleExtra("origLat", 999999);
-                    Double origLng = i.getDoubleExtra("origLng", 999999);
-                    Double destLat = i.getDoubleExtra("destLat", 999999);
-                    Double destLng = i.getDoubleExtra("destLng", 999999);
-
-                    toNavOrNotToNavIntent.putExtra("origLat", origLat);
-                    toNavOrNotToNavIntent.putExtra("origLng", origLng);
-                    toNavOrNotToNavIntent.putExtra("destLat", destLat);
-                    toNavOrNotToNavIntent.putExtra("destLng", destLng);
-                    toNavOrNotToNavIntent.putExtra("destName", destName);
                 } else {
                     // Create NoNavActivity intent
                     toNavOrNotToNavIntent = new Intent(getBaseContext(), NoNavActivity.class);
-                    toNavOrNotToNavIntent.putExtra("destName", destName);
                 }
+                // Pass origin/destination extras
+                Double origLat = i.getDoubleExtra("origLat", 999999);
+                Double origLng = i.getDoubleExtra("origLng", 999999);
+                Double destLat = i.getDoubleExtra("destLat", 999999);
+                Double destLng = i.getDoubleExtra("destLng", 999999);
+
+                toNavOrNotToNavIntent.putExtra("origLat", origLat);
+                toNavOrNotToNavIntent.putExtra("origLng", origLng);
+                toNavOrNotToNavIntent.putExtra("destLat", destLat);
+                toNavOrNotToNavIntent.putExtra("destLng", destLng);
+                toNavOrNotToNavIntent.putExtra("destName", destName);
                 startActivity(toNavOrNotToNavIntent);
             }
         });

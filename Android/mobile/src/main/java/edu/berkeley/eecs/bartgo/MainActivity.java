@@ -27,6 +27,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -58,6 +59,7 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
     HashMap<Integer, String> favoritesHash = new HashMap<Integer, String>();
 
     HashMap<String, LatLng> stationLatLngMap;
+    Switch turnByTurnSwitchMapTab;
 
     ////////////////////////////////////////////////////////////////////////////////
     // OVERRIDDEN METHODS (GENERAL)
@@ -83,6 +85,7 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
         final TextView underlineFavorites = (TextView) findViewById(R.id.underlineFavorites);
         final TextView underlineAll = (TextView) findViewById(R.id.underlineAll);
         final TextView underlineMap = (TextView) findViewById(R.id.underlineMap);
+        turnByTurnSwitchMapTab = (Switch) findViewById(R.id.turnbyturnSwitchMapTab);
 
         underlineAll.setBackgroundColor(Color.parseColor("#2C3E50"));
         underlineMap.setBackgroundColor(Color.parseColor("#2C3E50"));
@@ -404,10 +407,33 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
                 // Simulate long-click functionality
                 @Override
                 public void onMarkerDragStart(Marker marker) {
-                    Intent startNavIntent = new Intent(getBaseContext(), NavActivity.class);
-                    // dummy origin data
-                    startNavIntent.putExtra("origLat", 37.875173);
-                    startNavIntent.putExtra("origLng", -122.260172);
+//                    Intent startNavIntent = new Intent(getBaseContext(), NavActivity.class);
+//                    // dummy origin data
+//                    startNavIntent.putExtra("origLat", 37.875173);
+//                    startNavIntent.putExtra("origLng", -122.260172);
+//
+//                    // Retrieve destination based on marker being long-tapped on
+//                    String stationKey = marker.getTitle();
+//                    int len = stationKey.length();
+//                    stationKey = stationKey.substring(0, len - 5);
+//                    LatLng stationLatLng = getStationLatLng(stationKey);
+//
+//                    startNavIntent.putExtra("destLat", stationLatLng.latitude);
+//                    startNavIntent.putExtra("destLng", stationLatLng.longitude);
+//
+//                    startActivity(startNavIntent);
+//
+//
+
+                    Intent toNavOrNotToNavIntent;
+
+                    if (turnByTurnSwitchMapTab.isChecked()) {
+                        // Create NavActivity intent
+                        toNavOrNotToNavIntent = new Intent(getBaseContext(), NavActivity.class);
+                    } else {
+                        // Create NoNavActivity intent
+                        toNavOrNotToNavIntent = new Intent(getBaseContext(), NoNavActivity.class);
+                    }
 
                     // Retrieve destination based on marker being long-tapped on
                     String stationKey = marker.getTitle();
@@ -415,10 +441,22 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
                     stationKey = stationKey.substring(0, len - 5);
                     LatLng stationLatLng = getStationLatLng(stationKey);
 
-                    startNavIntent.putExtra("destLat", stationLatLng.latitude);
-                    startNavIntent.putExtra("destLng", stationLatLng.longitude);
+                    // Dummy origin data
+                    Double origLat = 37.875173;
+                    Double origLng = -122.260172;
+                    // Dest data
+                    Double destLat = stationLatLng.latitude;
+                    Double destLng = stationLatLng.longitude;
 
-                    startActivity(startNavIntent);
+                    // Pass origin/destination extras
+                    toNavOrNotToNavIntent.putExtra("origLat", origLat);
+                    toNavOrNotToNavIntent.putExtra("origLng", origLng);
+                    toNavOrNotToNavIntent.putExtra("destLat", destLat);
+                    toNavOrNotToNavIntent.putExtra("destLng", destLng);
+                    toNavOrNotToNavIntent.putExtra("destName", stationKey);
+
+                    startActivity(toNavOrNotToNavIntent);
+
                 }
 
                 @Override
