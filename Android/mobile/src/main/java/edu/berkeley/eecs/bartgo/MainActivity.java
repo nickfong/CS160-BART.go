@@ -1,6 +1,7 @@
 package edu.berkeley.eecs.bartgo;
 
-import java.util.Calendar;
+import java.util.Date;
+import android.view.View;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
@@ -79,7 +80,10 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
     private double currLong;
     private double trainLat = 37.869914; // Placeholder for Berkeley station
     private double trainLong = -122.268026; // Ditto
+    private double prevDist = 0;
+    private long[] bartTimes;
     private final String REFRESH_DATA = "/refresh_data";
+    private final String NEW_TRAINS = "/new_trains";
     private final int fetchInterval = 5000; // Update interval in milliseconds
 
     @Override
@@ -243,18 +247,37 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
                 if (mLastLocation != null) {
                     currLat = mLastLocation.getLatitude();
                     currLong = mLastLocation.getLongitude();
-                    int distance = getDistance(currLat, currLong);
-                    int secondsRemaining = (int) (distance/1.4); // Average human walking speed is 1.4 m/s
-                    Calendar calendar = Calendar.getInstance();
-                    calendar.add(Calendar.SECOND, secondsRemaining);
-                    sendMessage(REFRESH_DATA, "Dist: " + distance + "m\n" + "ETA: " + calendar.getTime());
+                    double distance = getDistance(currLat, currLong);
+                    double pace = (prevDist - distance) / fetchInterval / 1000; // Instantaneous meters per second
+                    double secondsRemaining = distance / pace;
+                    long arrival = new java.util.Date().getTime();
+                    long instant = arrival + (long) secondsRemaining * 1000;
+                    if (Math.abs(bartTimes[0] - instant) < 600000) {
+                        sendMessage(REFRESH_DATA, instant + "");
+                    } else {
+                        sendMessage(REFRESH_DATA, (arrival + (long) (distance/0.0014)) + "");
+                    }
+                    prevDist = distance;
                 }
                 handler.postDelayed(this, fetchInterval);
             }
         }, fetchInterval);
     }
 
-    public int getDistance(Double latitude, Double longitude) {
+    public void initialize(View view) {
+        long currMillis = new java.util.Date().getTime();
+        bartTimes = new long[3]; // Set bartTimes to array of BART arrival times from BART API
+        bartTimes[0] = currMillis + 1200000; // Fake data, train arriving 20 minutes after current time
+        bartTimes[1] = currMillis + 900000;
+        bartTimes[2] = currMillis + 600000;
+        String trainTimes = "";
+        for (int i = 0; i < bartTimes.length; i++) {
+            trainTimes += bartTimes[i] + " ";
+        }
+        sendMessage(NEW_TRAINS, trainTimes);
+    }
+
+    public double getDistance(Double latitude, Double longitude) {
         double trainLat2 = Math.toRadians(trainLat);
         double currLat2 = Math.toRadians(latitude);
         double deltaLong = Math.toRadians(trainLong - longitude);
@@ -262,7 +285,7 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
         double radius = 6371000;
         double a = Math.sin(deltaLat/2) * Math.sin(deltaLat/2) + Math.cos(currLat2) * Math.cos(trainLat2) * Math.sin(deltaLong/2) * Math.sin(deltaLong/2);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        return (int) (radius * c);
+        return radius * c;
     }
 
     @Override

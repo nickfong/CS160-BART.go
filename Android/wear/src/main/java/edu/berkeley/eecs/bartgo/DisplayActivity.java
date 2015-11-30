@@ -18,6 +18,16 @@ import android.widget.Toast;
 
 public class DisplayActivity extends WearableActivity {
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
+public class DisplayActivity extends WearableActivity {
+
+    private static final SimpleDateFormat AMBIENT_DATE_FORMAT =
+            new SimpleDateFormat("HH:mm", Locale.US);
+
+    private TextView mTextView;
     private BroadcastReceiver mReceiver;
     private PacingView mPacingView;
     private Context mContext = this;
@@ -27,6 +37,7 @@ public class DisplayActivity extends WearableActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         registerReceiver(closeCurrent, new IntentFilter("close"));
+        mTextView = (TextView) findViewById(R.id.text);
         final WatchViewStub stub = (WatchViewStub) findViewById(R.id.watch_view_stub);
         stub.setOnLayoutInflatedListener(new WatchViewStub.OnLayoutInflatedListener() {
             @Override
