@@ -40,8 +40,8 @@ public class BartService extends Service {
      * @return a String that is a valid API call for the given command and
      *         arguments
      */
-    private String generateApiCall(String command, ArrayList<String> arguments) {
-        String prefix = "http://api.bart.gov/api/stn.aspx?cmd=";
+    private String generateApiCall(String verb, String command, ArrayList<String> arguments) {
+        String prefix = "http://api.bart.gov/api/" + verb + ".aspx?cmd=";
         String suffix = "&key=" + PrivateConstants.BART_API_KEY;
         String call = prefix + command;
         if (arguments != null) {
@@ -49,6 +49,7 @@ public class BartService extends Service {
                 call += "&" + arguments.get(i);
             }
         }
+        Log.i(TAG, "API Call is: " + call + suffix + "<");
         return call + suffix;
     }
 
@@ -60,9 +61,10 @@ public class BartService extends Service {
      */
     public ArrayList<Station> populateStations() {
         ArrayList<Station> stations = new ArrayList<Station>();
-        String call = generateApiCall("stns", null);
+        String call = generateApiCall("stn", "stns", null);
         try {
             String result = new StationXmlTask().execute(call).get();
+            Log.i(TAG, "Result of API call is: " + result + "<");
             String[] stationStrings = result.split("\n");
             for (String station : stationStrings) {
                 Log.i(TAG, "Got a station: " + station);
@@ -85,10 +87,11 @@ public class BartService extends Service {
     }
 
     private HashMap<Integer, Route> populateRoutes() {
-        String call = generateApiCall("routes", null);
+        String call = generateApiCall("route", "routes", null);
         HashMap<Integer, Route> routes = new HashMap<>();
         try {
-            String result = new StationXmlTask().execute(call).get();
+            String result = new RouteXmlTask().execute(call).get();
+            Log.i(TAG, "Result of API call is: " + result + "<");
             String[] routeStrings = result.split("\n");
             for (String route : routeStrings) {
                 Log.i(TAG, "Got a route: " + route);
@@ -99,7 +102,7 @@ public class BartService extends Service {
                     String id = routeString[2];
                     String number = routeString[3];
                     String color = routeString[4];
-                    routes.put(new Integer(id), new Route(name, abbreviation, id, number, color));
+                    routes.put(new Integer(number), new Route(name, abbreviation, id, number, color));
                 }
             }
         } catch (InterruptedException e) {
@@ -126,7 +129,7 @@ public class BartService extends Service {
         ArrayList<String> callArgs = new ArrayList<>();
         callArgs.add("orig=" + startStation.getAbbreviation());
         callArgs.add("dest=" + destinationStation.getAbbreviation());
-        String call = generateApiCall("fare", callArgs);
+        String call = generateApiCall("sched", "fare", callArgs);
         //TODO parse call and fix call to Trip constructor
         Trip trip = new Trip(startStation, destinationStation, 0.0f);
 
@@ -151,7 +154,7 @@ public class BartService extends Service {
         callArgs.add(time != null ? "time=" + time : "time=now");
         callArgs.add("b=0");    //get 0 trips before the current time
         callArgs.add("a=4");    //get 0 trips before the current time
-        String call = generateApiCall("depart", callArgs);
+        String call = generateApiCall("sched", "depart", callArgs);
 
         ArrayList<Legs> legs = new ArrayList<>();
         //TODO parse call
@@ -164,7 +167,7 @@ public class BartService extends Service {
         Station station = trip.getStartingStation();
         ArrayList<String> callArgs = new ArrayList<>();
         callArgs.add("orig=" + station.getAbbreviation());
-        String call = generateApiCall("etd", callArgs);
+        String call = generateApiCall("etd", "etd", callArgs);
         //TODO parse call
 
 
@@ -188,13 +191,13 @@ public class BartService extends Service {
             idString = idString.substring(0, idString.length()-1);
         }
         callArgs.add(idString);
-        String call = generateApiCall("load", callArgs);
+        String call = generateApiCall("sched", "load", callArgs);
         //TODO parse call
         return null;
     }
 
     public ArrayList<Advisory> getCurrentAdvisories() {
-        String call = generateApiCall("bsa", null);
+        String call = generateApiCall("bsa", "bsa", null);
         ArrayList<Advisory> advisories = new ArrayList<>();
         //TODO parse call
 

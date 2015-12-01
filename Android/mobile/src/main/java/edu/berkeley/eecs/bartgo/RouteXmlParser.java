@@ -55,7 +55,7 @@ public class RouteXmlParser {
                     }
                 }
             } else {
-                Log.i(TAG, "Found " + name + " instead of Routes");
+                Log.i(TAG, "Found " + name + " instead of routes");
                 skip(parser);
             }
         }
@@ -64,7 +64,7 @@ public class RouteXmlParser {
 
     private Route readEntry(XmlPullParser parser) throws XmlPullParserException, IOException {
         Log.i(TAG, "At top of readEntry");
-        parser.require(XmlPullParser.START_TAG, ns, "Route");
+        parser.require(XmlPullParser.START_TAG, ns, "route");
         String routeName = null;
         String abbreviation = null;
         String Id = null;
