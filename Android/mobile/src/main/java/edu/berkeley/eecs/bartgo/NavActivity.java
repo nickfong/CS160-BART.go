@@ -99,7 +99,7 @@ public class NavActivity extends Activity {
         if (i.getBooleanExtra("isChecked", false)) {
             runNav();
         }
-        // Log.d(TAG_DEBUG, "******* What is navInstructions?  It is " + navInstructions);
+        Log.d(TAG_DEBUG, "******* What is navInstructions?  It is " + navInstructions);
     }
 
     private void sendMessage( final String path, final String text ) {
@@ -270,7 +270,7 @@ public class NavActivity extends Activity {
         String dLat = String.valueOf(i.getDoubleExtra("destLat", 999999));
         String dLng = String.valueOf(i.getDoubleExtra("destLng", 999999));
 
-        String url = "https://maps.googleapis.com/maps/api/directions/json?origin=" + oLat + "," + oLng + "&destination=" + dLat + "," + dLng + "&mode=walking&key=" + PrivateConstants.GOOGLE_API_KEY;
+        String url = "https://maps.googleapis.com/maps/api/directions/json?origin=" + oLat + "," + oLng + "&destination=" + dLat + "," + dLng + "&mode=walking&key=" + PrivateConstants.GOOGLE_API_SERVER_KEY;
         return url;
     }
 

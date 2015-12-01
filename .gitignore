@@ -27,3 +27,4 @@ Android/build/*
 
 # Private files
 Android/mobile/src/main/java/edu/berkeley/eecs/bartgo/PrivateConstants.java
+Android/mobile/src/main/res/values/privateconstants.xml
