@@ -25,7 +25,7 @@ public class Station {
         return this.address;
     }
 
-    public String retZip() {
+    public String getZip() {
         return this.zip;
     }
 

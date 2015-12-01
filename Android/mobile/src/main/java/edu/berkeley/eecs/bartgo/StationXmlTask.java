@@ -6,19 +6,19 @@ import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.HttpURLConnection;
 import java.util.ArrayList;
 
-private class StationXmlTask extends AsyncTask<String, Void, String> {
+class StationXmlTask extends AsyncTask<String, Void, String> {
     @Override
-    protected ArrayList<Station> doInBackground(String... urls) {
+    protected String doInBackground(String... urls) {
         try {
             return loadXmlFromNetwork(urls[0]);
         } catch (IOException e) {
-            return getResources().getString(R.string.connection_error);
+            return "Connection error"; //getResources().getString(R.string.connection_error);
         } catch (XmlPullParserException e) {
-            return getResources().getString(R.string.xml_error);
+            return "XML Error"; //getResources().getString(R.string.xml_error);
         }
     }
 
@@ -32,7 +32,7 @@ private class StationXmlTask extends AsyncTask<String, Void, String> {
         */
     }
 
-    private ArrayList<Station> loadXmlFromNetwork(String urlString) throws XmlPullParserException, IOException {
+    private String loadXmlFromNetwork(String urlString) throws XmlPullParserException, IOException {
         InputStream stream = null;
         // Instantiate the parser
         StationXmlParser stationParser = new StationXmlParser();
@@ -40,13 +40,18 @@ private class StationXmlTask extends AsyncTask<String, Void, String> {
 
         try {
             stream = downloadUrl(urlString);
-            stations = StationXmlParser.parse(stream);
+            stations = (ArrayList)stationParser.parse(stream);
         } finally {
             if (stream != null) {
                 stream.close();
             }
         }
-        return stations;
+
+        String station_string = "";
+        for (Station station : stations) {
+            station_string += station.getAbbreviation() + ";" + station.getName() + ";" + station.getAddress() + ";" + station.getZip() + "\n";
+        }
+        return station_string;
     }
 
     // Given a string representation of a URL, sets up a connection and gets

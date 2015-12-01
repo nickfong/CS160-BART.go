@@ -8,11 +8,12 @@ import org.xmlpull.v1.XmlPullParserException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.List;
 
 public class StationXmlParser {
     private static final String ns = null;
 
-    public ArrayList<Station> parse(InputStream in) throws XmlPullParserException, IOException {
+    public List parse(InputStream in) throws XmlPullParserException, IOException {
         try {
             XmlPullParser parser = Xml.newPullParser();
             parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
@@ -27,7 +28,7 @@ public class StationXmlParser {
     /**
      * Extract each station entry in the XML
      */
-    private ArrayList<Station> readFeed(XmlPullParser parser) throws XmlPullParserException, IOException {
+    private List readFeed(XmlPullParser parser) throws XmlPullParserException, IOException {
         ArrayList stations = new ArrayList();
 
         parser.require(XmlPullParser.START_TAG, ns, "feed");
