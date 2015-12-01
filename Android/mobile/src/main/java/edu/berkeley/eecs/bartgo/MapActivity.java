@@ -1,5 +1,12 @@
+/**
+ * THIS ACTIVITY IS DEPRECATED!
+ *
+ * Its features have been incorporated into MainActivity.
+ */
+
 package edu.berkeley.eecs.bartgo;
 
+import android.app.Activity;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -21,6 +28,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+
+import edu.berkeley.eecs.bartgo.NavActivity;
+import edu.berkeley.eecs.bartgo.R;
 
 public class MapActivity extends Activity implements OnMapReadyCallback {
 
@@ -150,10 +160,6 @@ public class MapActivity extends Activity implements OnMapReadyCallback {
                     startActivity(startNavIntent);
                 }
 
-                @Override
-                public void onMarkerDragEntered(Marker marker) {
-
-                }
                 @Override
                 public void onMarkerDragEnd(Marker marker) {
                     // Nothing special to do

@@ -18,7 +18,6 @@
         android:gravity="bottom|center_horizontal"
         android:paddingBottom="5dp"
         android:layout_height="30dp"/>
-        <!--android:onClick="onClickMapTab"/>-->
 
     <Button
         style="?android:attr/buttonStyleSmall"
@@ -111,66 +110,20 @@
         android:layout_marginLeft="12dp"
         tools:listitem="@android:layout/simple_list_item_1" />
 
-    <!--<ImageView-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:id="@+id/bartMap"-->
-        <!--android:visibility="invisible"-->
-        <!--android:src="@mipmap/bartmap"-->
-        <!--android:layout_centerVertical="true"-->
-        <!--android:layout_centerHorizontal="true" />-->
-
-    <RelativeLayout android:id="@+id/mapFrameWrap"
-        android:orientation="vertical"
-        android:layout_width="match_parent"
+    <FrameLayout android:id="@+id/mapFrame"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/underlineAll"
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true"
+        android:layout_marginTop="12.5dp"
+        android:layout_marginLeft="12.5dp"
+        android:layout_marginRight="12.5dp"
+        android:layout_gravity="center"
         android:visibility="invisible">
 
-        <Switch
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:text="Turn-by-Turn Navigation"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:textColor="#ffffff"
-            android:id="@+id/turnbyturnSwitchMapTab"
-            android:paddingTop="12.5dp"
-            android:paddingBottom="12.5dp"
-            android:layout_alignParentTop="true"
-            android:background="#2C3E50"
-            android:paddingLeft="60dp"
-            android:paddingRight="60dp"
-            android:layout_marginTop="12.5dp"
-            android:layout_marginLeft="12.5dp"
-            android:layout_marginRight="12.5dp"/>
-
-        <!--<TextView-->
-            <!--android:layout_width="320dp"-->
-            <!--android:layout_height="1dp"-->
-            <!--android:id="@+id/dividerMapTab"-->
-            <!--android:background="#95A5A6"-->
-            <!--android:layout_alignParentTop="true"-->
-            <!--android:layout_marginTop="20dp"-->
-            <!--android:layout_centerHorizontal="true" />-->
-
-        <FrameLayout android:id="@+id/mapFrame"
+        <fragment android:id="@+id/mapFrag"
+            class="com.google.android.gms.maps.MapFragment"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/turnbyturnSwitchMapTab"
-            android:layout_alignParentBottom="true"
-            android:layout_marginLeft="12.5dp"
-            android:layout_marginRight="12.5dp">
-
-            <fragment android:id="@+id/mapFrag"
-                class="com.google.android.gms.maps.MapFragment"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
-        </FrameLayout>
-    </RelativeLayout>
-
-
+            android:layout_height="wrap_content"/>
+    </FrameLayout>
 
 </RelativeLayout>

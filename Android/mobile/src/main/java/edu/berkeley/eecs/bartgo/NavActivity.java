@@ -5,13 +5,11 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.text.Html;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.TextView;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -32,6 +30,7 @@ public class NavActivity extends Activity {
     //GLOBAL VARS
     ////////////////////////////////////////////////////////////////////////////////
     protected final static String TAG_DEBUG = "tag_debug";  // For Log.d()
+    private Intent i;
     public ArrayList<NavInstruction> navInstructions = null;
 
 
@@ -45,6 +44,7 @@ public class NavActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        // Set menu bar properties
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_nav);
 
@@ -53,8 +53,15 @@ public class NavActivity extends Activity {
         window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
         window.setStatusBarColor(Color.parseColor("#1e2a37"));
 
-        // Run sample navigation directions display
-        runNav();
+        // Query for navigation if toggle switch was checked.
+        // Else, notice that the navInstructions ArrayList remains null.
+        // As such, a null check on it can also be used to determine whether or not
+        //   navigation has been requested.
+        i = getIntent();
+        if (i.getBooleanExtra("isChecked", false)) {
+            runNav();
+        }
+        // Log.d(TAG_DEBUG, "******* What is navInstructions?  It is " + navInstructions);
     }
 
     @Override
@@ -160,7 +167,6 @@ public class NavActivity extends Activity {
      * @return          The query URL, as a String.
      */
     private String generateNavQueryUrlString () {
-        Intent i = getIntent();
         String oLat = String.valueOf(i.getDoubleExtra("origLat", 999999));
         String oLng = String.valueOf(i.getDoubleExtra("origLng", 999999));
         String dLat = String.valueOf(i.getDoubleExtra("destLat", 999999));

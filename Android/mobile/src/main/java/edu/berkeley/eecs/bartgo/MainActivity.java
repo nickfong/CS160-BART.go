@@ -24,10 +24,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.RelativeLayout;
-import android.widget.Switch;
 import android.widget.TextView;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -47,19 +44,25 @@ import java.util.Map;
 import java.util.Set;
 
 public class MainActivity extends Activity implements OnMapReadyCallback {
+    ////////////////////////////////////////////////////////////////////////////////
+    // GLOBAL VARS
+    ////////////////////////////////////////////////////////////////////////////////
     BartService mBService;
     boolean mBound = false;
 
     static String currList = "Favorites";
-    HashMap<String, Integer> fullHash = new HashMap<String, Integer>();
+
     ArrayList<String> allStationsList;
     ArrayList<String> favoritesList;
     ArrayList<Integer> favoritesImageList;
+
+    HashMap<String, Integer> fullHash = new HashMap<String, Integer>();
     HashMap<Integer, String> allStationsHash = new HashMap<Integer, String>();
     HashMap<Integer, String> favoritesHash = new HashMap<Integer, String>();
-
     HashMap<String, LatLng> stationLatLngMap;
-    Switch turnByTurnSwitchMapTab;
+
+
+
 
     ////////////////////////////////////////////////////////////////////////////////
     // OVERRIDDEN METHODS (GENERAL)
@@ -67,6 +70,8 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Setting menu bar properties
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_main);
 
@@ -75,26 +80,27 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
         window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
         window.setStatusBarColor(Color.parseColor("#1e2a37"));
 
+        // Capturing UI Views
         final ListView listView = (ListView) findViewById(R.id.listView);
-        final MapFragment mapFrag = ((MapFragment) getFragmentManager().findFragmentById(R.id.mapFrag));
         final FrameLayout mapFrame = (FrameLayout) findViewById(R.id.mapFrame);
-        final RelativeLayout mapFrameWrap = (RelativeLayout) findViewById(R.id.mapFrameWrap);
         final Button allStationsButton = (Button) findViewById(R.id.allStations);
         final Button favoritesButton = (Button) findViewById(R.id.favoritesButton);
         final Button mapButton = (Button) findViewById(R.id.mapButton);
         final TextView underlineFavorites = (TextView) findViewById(R.id.underlineFavorites);
         final TextView underlineAll = (TextView) findViewById(R.id.underlineAll);
         final TextView underlineMap = (TextView) findViewById(R.id.underlineMap);
-        turnByTurnSwitchMapTab = (Switch) findViewById(R.id.turnbyturnSwitchMapTab);
 
         underlineAll.setBackgroundColor(Color.parseColor("#2C3E50"));
         underlineMap.setBackgroundColor(Color.parseColor("#2C3E50"));
         allStationsButton.setTextColor(Color.parseColor("#95A5A6"));
         mapButton.setTextColor(Color.parseColor("#95A5A6"));
 
+        // UI data structures
         createAllStationsHash();
         createFavoritesHash();
         listView.setAdapter(setFavoriteStations());
+
+        // Station Latitude-Longitude data structure
         stationLatLngMap = getStationLatLngMap();
 
         // Generate mapFragment for Map tab
@@ -102,7 +108,7 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
                 .findFragmentById(R.id.mapFrag);
         mapFragment.getMapAsync(this);
 
-        // Generate Spinners and OnClickListeners
+        // Generate UI Spinners and OnClickListeners
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -139,9 +145,7 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
             public void onClick(View v) {
                 currList = "All";
                 listView.setAdapter(setAllStations());
-                // mapFrag.getView().setVisibility(View.INVISIBLE);
-//                mapFrame.setVisibility(View.INVISIBLE);
-                mapFrameWrap.setVisibility(View.INVISIBLE);
+                mapFrame.setVisibility(View.INVISIBLE);
                 underlineAll.setBackgroundColor(Color.parseColor("#F39C12"));
                 underlineMap.setBackgroundColor(Color.parseColor("#2C3E50"));
                 underlineFavorites.setBackgroundColor(Color.parseColor("#2C3E50"));
@@ -156,9 +160,7 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
             public void onClick(View v) {
                 currList = "Favorites";
                 listView.setAdapter(setFavoriteStations());
-//                mapFrag.getView().setVisibility(View.INVISIBLE);
-//                mapFrame.setVisibility(View.INVISIBLE);
-                mapFrameWrap.setVisibility(View.INVISIBLE);
+                mapFrame.setVisibility(View.INVISIBLE);
                 underlineFavorites.setBackgroundColor(Color.parseColor("#F39C12"));
                 underlineAll.setBackgroundColor(Color.parseColor("#2C3E50"));
                 underlineMap.setBackgroundColor(Color.parseColor("#2C3E50"));
@@ -172,16 +174,13 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
             @Override
             public void onClick(View v) {
                 listView.setAdapter(clearStations());
-//                mapFrag.getView().setVisibility(View.VISIBLE);
-//                mapFrame.setVisibility(View.VISIBLE);
-                mapFrameWrap.setVisibility(View.VISIBLE);
+                mapFrame.setVisibility(View.VISIBLE);
                 underlineMap.setBackgroundColor(Color.parseColor("#F39C12"));
                 underlineAll.setBackgroundColor(Color.parseColor("#2C3E50"));
                 underlineFavorites.setBackgroundColor(Color.parseColor("#2C3E50"));
                 mapButton.setTextColor(Color.parseColor("#F39C12"));
                 favoritesButton.setTextColor(Color.parseColor("#95A5A6"));
                 allStationsButton.setTextColor(Color.parseColor("#95A5A6"));
-//                onClickMapTab(mapButton);
             }
         });
 
@@ -338,15 +337,7 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
         return stationMap;
     }
 
-    /**
-     * Transition to MapActivity, which displays the interactive station
-     * selection map, upon the user tapping on the maps tab.
-     */
-    public void onClickMapTab(View view) {
-        Intent intentMapTab = new Intent(this, MapActivity.class);
-        intentMapTab.putExtra("stationsLatLngMap", stationLatLngMap);
-        startActivity(intentMapTab);
-    }
+
 
 
 
@@ -407,33 +398,7 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
                 // Simulate long-click functionality
                 @Override
                 public void onMarkerDragStart(Marker marker) {
-//                    Intent startNavIntent = new Intent(getBaseContext(), NavActivity.class);
-//                    // dummy origin data
-//                    startNavIntent.putExtra("origLat", 37.875173);
-//                    startNavIntent.putExtra("origLng", -122.260172);
-//
-//                    // Retrieve destination based on marker being long-tapped on
-//                    String stationKey = marker.getTitle();
-//                    int len = stationKey.length();
-//                    stationKey = stationKey.substring(0, len - 5);
-//                    LatLng stationLatLng = getStationLatLng(stationKey);
-//
-//                    startNavIntent.putExtra("destLat", stationLatLng.latitude);
-//                    startNavIntent.putExtra("destLng", stationLatLng.longitude);
-//
-//                    startActivity(startNavIntent);
-//
-//
-
-                    Intent toNavOrNotToNavIntent;
-
-                    if (turnByTurnSwitchMapTab.isChecked()) {
-                        // Create NavActivity intent
-                        toNavOrNotToNavIntent = new Intent(getBaseContext(), NavActivity.class);
-                    } else {
-                        // Create NoNavActivity intent
-                        toNavOrNotToNavIntent = new Intent(getBaseContext(), NoNavActivity.class);
-                    }
+                    Intent postSelectionIntent = new Intent(getBaseContext(), postSelection.class);
 
                     // Retrieve destination based on marker being long-tapped on
                     String stationKey = marker.getTitle();
@@ -449,13 +414,13 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
                     Double destLng = stationLatLng.longitude;
 
                     // Pass origin/destination extras
-                    toNavOrNotToNavIntent.putExtra("origLat", origLat);
-                    toNavOrNotToNavIntent.putExtra("origLng", origLng);
-                    toNavOrNotToNavIntent.putExtra("destLat", destLat);
-                    toNavOrNotToNavIntent.putExtra("destLng", destLng);
-                    toNavOrNotToNavIntent.putExtra("destName", stationKey);
+                    postSelectionIntent.putExtra("origLat", origLat);
+                    postSelectionIntent.putExtra("origLng", origLng);
+                    postSelectionIntent.putExtra("destLat", destLat);
+                    postSelectionIntent.putExtra("destLng", destLng);
+                    postSelectionIntent.putExtra("destName", stationKey);
 
-                    startActivity(toNavOrNotToNavIntent);
+                    startActivity(postSelectionIntent);
 
                 }
 
@@ -508,6 +473,10 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
     ////////////////////////////////////////////////////////////////////////////////
     // MOBILE UI:  CUSTOM LIST GENERATOR
     ////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * A custom ArrayAdapter class for displaying stations to select from.
+     */
     public class CustomList extends ArrayAdapter<String> {
 
         private final Activity context;
@@ -570,8 +539,9 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
     // MOBILE UI:  CREATION METHODS
     ////////////////////////////////////////////////////////////////////////////////
     /**
-     * TODO--INTEGRATION:  CHANGE TO ACCEPT INPUT FROM NICK'S API DATA
+     * Generates station list with which to populate the "All Stations" tab's Spinner.
      *
+     * TODO--INTEGRATION:  CHANGE TO ACCEPT INPUT FROM NICK'S API DATA
      */
     public void createAllStationsHash() {
         // Hard-coded station data
@@ -630,6 +600,9 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
         }
     }
 
+    /**
+     * Generates a sample station list with which to populate the "Favorites" tab's Spinner.
+     */
     public void createFavoritesHash() {
         // Hardcoded (intended as default?) data
         favoritesList =  new ArrayList<>(45);
@@ -650,6 +623,11 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
         }
     }
 
+    /**
+     * Sets the station list to display under the "All Stations" tab as an ArrayAdapter.
+     *
+     * @return      A CustomList ArrayAdapter of stations to display.
+     */
     public CustomList setAllStations(){
         favoritesImageList = new ArrayList<Integer>(Collections.nCopies(45, R.drawable.graystar));
         Collections.sort(favoritesList);
@@ -666,6 +644,11 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
         return adapter;
     }
 
+    /**
+     * Sets the station list to display under the "Favorites" tab as an ArrayAdapter.
+     *
+     * @return      An ArrayAdapter of stations to display.
+     */
     public ArrayAdapter<String> setFavoriteStations(){
         favoritesImageList = new ArrayList<Integer>(favoritesList.size());
         Collections.sort(favoritesList);
@@ -684,6 +667,11 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
         return adapter;
     }
 
+    /**
+     * Clears the station list to display (?)
+     *
+     * @return      The cleared ArrayAdapter of stations.
+     */
     public ArrayAdapter<String> clearStations(){
         ArrayList<String> list =  new ArrayList<>(1);
         ArrayAdapter<String> listAdapter = new ArrayAdapter<String>(this, R.layout.simple_list_item_1, list);

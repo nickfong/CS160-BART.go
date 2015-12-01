@@ -1,3 +1,9 @@
+/**
+ * THIS ACTIVITY IS DEPRECATED!
+ *
+ * Its features have been incorporated into NavActivity.
+ */
+
 package edu.berkeley.eecs.bartgo;
 
 import android.app.Activity;
