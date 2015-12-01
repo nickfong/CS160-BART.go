@@ -24,12 +24,7 @@ class StationXmlTask extends AsyncTask<String, Void, String> {
 
     @Override
     protected void onPostExecute(String result) {
-        /*
-        setContentView(R.layout.main);
-        // Displays the HTML string in the UI via a WebView
-        WebView myWebView = (WebView) findViewById(R.id.webview);
-        myWebView.loadData(result, "text/html", null);
-        */
+        super.onPostExecute(result);
     }
 
     private String loadXmlFromNetwork(String urlString) throws XmlPullParserException, IOException {
