@@ -1,3 +1,14 @@
+package edu.berkeley.eecs.bartgo;
+
+import android.util.Xml;
+
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+
 public class StationXmlParser {
     private static final String ns = null;
 
@@ -38,7 +49,7 @@ public class StationXmlParser {
     private Station readEntry(XmlPullParser parser) throws XmlPullParserException, IOException {
         parser.require(XmlPullParser.START_TAG, ns, "entry");
         String abbreviation = null;
-        String name = null;
+        String stationName = null;
         String address = null;
         String zip = null;
         while (parser.next() != XmlPullParser.END_TAG) {
@@ -47,18 +58,19 @@ public class StationXmlParser {
             }
             String name = parser.getName();
             if (name.equals("name")) {
-                title = readTitle(parser);
+                stationName = readName(parser);
             } else if (name.equals("abbr")) {
-                summary = readSummary(parser);
+                abbreviation = readAbbr(parser);
             } else if (name.equals("address")) {
-                link = readLink(parser);
+                address = readAddress(parser);
             } else if (name.equals("zipcode")) {
-                zip = readLink(parser);
+                zip = readZipcode(parser);
+            }
             else {
                 skip(parser);
             }
         }
-        return new Station(abbreviation, name, address, zipcode);
+        return new Station(abbreviation, stationName, address, zip);
     }
 
     private String readName(XmlPullParser parser) throws IOException, XmlPullParserException {
@@ -104,6 +116,15 @@ public class StationXmlParser {
                 break;
             }
         }
+    }
+
+    private String readText(XmlPullParser parser) throws IOException, XmlPullParserException {
+        String result = "";
+        if (parser.next() == XmlPullParser.TEXT) {
+            result = parser.getText();
+            parser.nextTag();
+        }
+        return result;
     }
 }
 

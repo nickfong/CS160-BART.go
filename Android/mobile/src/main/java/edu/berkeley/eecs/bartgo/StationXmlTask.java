@@ -1,3 +1,15 @@
+package edu.berkeley.eecs.bartgo;
+
+import android.os.AsyncTask;
+
+import org.xmlpull.v1.XmlPullParserException;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
+
 private class StationXmlTask extends AsyncTask<String, Void, String> {
     @Override
     protected ArrayList<Station> doInBackground(String... urls) {
@@ -28,13 +40,13 @@ private class StationXmlTask extends AsyncTask<String, Void, String> {
 
         try {
             stream = downloadUrl(urlString);
-            stations = stackOverflowXmlParser.parse(stream);
+            stations = StationXmlParser.parse(stream);
         } finally {
             if (stream != null) {
                 stream.close();
             }
         }
-        return stations
+        return stations;
     }
 
     // Given a string representation of a URL, sets up a connection and gets
