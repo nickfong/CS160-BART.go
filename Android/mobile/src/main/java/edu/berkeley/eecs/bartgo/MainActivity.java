@@ -365,7 +365,7 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
      * Tap: display station name and station details.
      * Long-Tap: launch turn-by-turn navigation (NavActivity) to selected station.
      *
-     * TODO--INTEGRATION:  POPULATE STATION DETAILS WITH RELEVANT INFO AS DECIDED BY GROUP
+     * TODO--INTEGRATION:  REPLACE DUMMY STATION DETAILS SNIPPET WITH ACTUAL INFO FROM NICK'S API CALLS
      * TODO--INTEGRATION:  REPLACE DUMMY ORIGIN LAT/LNG DATA (SEE onMarkerDragStart())
      * TODO                WITH ACTUAL CURRENT POS CALCULATED IN PATRICK'S MAIN ACTIVITY.
      *
@@ -392,7 +392,7 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
                     .anchor(0.5f, 1.0f) /*Anchors the marker on the bottom center */
                     .position(val)
                     .title(stationName + " BART")
-                    .snippet("<Insert additional station info here!>")
+                    .snippet("ETA:  50 min | $6.50 | $13.00")
                     .draggable(true));
             map.setOnMarkerDragListener(new GoogleMap.OnMarkerDragListener() {
                 // Simulate long-click functionality
