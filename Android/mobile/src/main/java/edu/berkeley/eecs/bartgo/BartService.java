@@ -1,6 +1,12 @@
 package edu.berkeley.eecs.bartgo;
 
+
+/* This service should be bound */
+import android.app.Service;
+import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.Binder;
+import android.os.IBinder;
 import android.util.Log;
 
 import java.util.ArrayList;
@@ -8,9 +14,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.concurrent.ExecutionException;
 
-public class BartService {
+public class BartService extends Service {
     private final String TAG = "BartService";
     private HashMap<Integer, Route> routes;
+    private final IBinder mBinder = new LocalBinder();
 
     /**
      * The BartService constructor calls populateStations() to get an ArrayList
@@ -23,6 +30,15 @@ public class BartService {
     public ArrayList<Station> BartService() {
         this.routes = populateRoutes();
         return populateStations();
+    }
+
+    @Override
+    public IBinder onBind(Intent intent) {
+        populateStations();
+        Log.i(TAG, "Populating stations in onBind");
+        return mBinder;
+        // TODO: Return the communication channel to the service.
+//        throw new UnsupportedOperationException("Not yet implemented");
     }
 
     /**
@@ -58,13 +74,16 @@ public class BartService {
             String result = new StationXmlTask().execute(call).get();
             String[] stationStrings = result.split("\n");
             for (String station : stationStrings) {
+                Log.i(TAG, "Got a station: " + station);
                 String[] stationString = station.split(";");
-                String abbreviation = stationString[0];
-                String name = stationString[1];
-                String address = stationString[2];
-                String zip = stationString[3];
-                stations.add(new Station(abbreviation, name, address, zip));
-                Log.i(TAG, "New station object with station " + station);
+                Log.i(TAG, String.valueOf(stationString));
+                if (stationString.length == 4) {
+                    String abbreviation = stationString[0];
+                    String name = stationString[1];
+                    String address = stationString[2];
+                    String zip = stationString[3];
+                    stations.add(new Station(abbreviation, name, address, zip));
+                }
             }
         } catch (InterruptedException e) {
             Log.e(TAG, "XmlTask execution from populateStations was interupted: " + e);
@@ -169,5 +188,12 @@ public class BartService {
         //TODO parse call
 
         return advisories;
+    }
+
+    public class LocalBinder extends Binder {
+        BartService getService() {
+            // Return this instance of LocalService so clients can call public methods
+            return BartService.this;
+        }
     }
 }

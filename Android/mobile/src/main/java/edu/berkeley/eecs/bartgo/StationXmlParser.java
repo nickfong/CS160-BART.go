@@ -1,5 +1,6 @@
 package edu.berkeley.eecs.bartgo;
 
+import android.util.Log;
 import android.util.Xml;
 
 import org.xmlpull.v1.XmlPullParser;
@@ -12,6 +13,7 @@ import java.util.List;
 
 public class StationXmlParser {
     private static final String ns = null;
+    private static final String TAG = "StationXmlParser";
 
     public List parse(InputStream in) throws XmlPullParserException, IOException {
         try {
@@ -29,18 +31,24 @@ public class StationXmlParser {
      * Extract each station entry in the XML
      */
     private List readFeed(XmlPullParser parser) throws XmlPullParserException, IOException {
+        Log.i(TAG, "At top of readFeed");
         ArrayList stations = new ArrayList();
 
-        parser.require(XmlPullParser.START_TAG, ns, "feed");
+        parser.require(XmlPullParser.START_TAG, ns, "root");
         while (parser.next() != XmlPullParser.END_TAG) {
+            Log.i(TAG, "At top of loop");
             if (parser.getEventType() != XmlPullParser.START_TAG) {
+                parser.next();
+                Log.i(TAG, "Continuing");
                 continue;
             }
             String name = parser.getName();
             // Starts by looking for the entry tag
-            if (name.equals("station")) {
+            if (name.equals("stations")) {
+                Log.i(TAG, "Found stations tag");
                 stations.add(readEntry(parser));
             } else {
+                Log.i(TAG, "Found " + name + " instead of a station");
                 skip(parser);
             }
         }
@@ -48,7 +56,8 @@ public class StationXmlParser {
     }
 
     private Station readEntry(XmlPullParser parser) throws XmlPullParserException, IOException {
-        parser.require(XmlPullParser.START_TAG, ns, "entry");
+        Log.i(TAG, "At top of readEntry");
+        parser.require(XmlPullParser.START_TAG, ns, "stations");
         String abbreviation = null;
         String stationName = null;
         String address = null;
@@ -58,14 +67,23 @@ public class StationXmlParser {
                 continue;
             }
             String name = parser.getName();
-            if (name.equals("name")) {
-                stationName = readName(parser);
-            } else if (name.equals("abbr")) {
-                abbreviation = readAbbr(parser);
-            } else if (name.equals("address")) {
-                address = readAddress(parser);
-            } else if (name.equals("zipcode")) {
-                zip = readZipcode(parser);
+            if (name.equals("station")) {
+                Log.i(TAG, "Found station");
+                parser.require(XmlPullParser.START_TAG, ns, "station");
+                while (parser.next() != XmlPullParser.END_TAG) {
+                    if (name.equals("name")) {
+                        stationName = readName(parser);
+                    } else if (name.equals("abbr")) {
+                        abbreviation = readAbbr(parser);
+                    } else if (name.equals("address")) {
+                        address = readAddress(parser);
+                    } else if (name.equals("zipcode")) {
+                        zip = readZipcode(parser);
+                    } else {
+                        Log.i(TAG, "Found " + name);
+                        skip(parser);
+                    }
+                }
             }
             else {
                 skip(parser);

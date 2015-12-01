@@ -1,6 +1,7 @@
 package edu.berkeley.eecs.bartgo;
 
 import android.os.AsyncTask;
+import android.util.Log;
 
 import org.xmlpull.v1.XmlPullParserException;
 
@@ -11,14 +12,18 @@ import java.net.HttpURLConnection;
 import java.util.ArrayList;
 
 class StationXmlTask extends AsyncTask<String, Void, String> {
+    private final String TAG = "StationXmlTask";
+
     @Override
     protected String doInBackground(String... urls) {
         try {
             return loadXmlFromNetwork(urls[0]);
         } catch (IOException e) {
+            Log.e(TAG, String.valueOf(e));
             return "Connection error"; //getResources().getString(R.string.connection_error);
         } catch (XmlPullParserException e) {
-            return "XML Error"; //getResources().getString(R.string.xml_error);
+            Log.e(TAG, String.valueOf(e));
+            return "XML Error:" + e; //getResources().getString(R.string.xml_error);
         }
     }
 
