@@ -2,6 +2,7 @@ package edu.berkeley.eecs.bartgo;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 
 public class BartService {
     private final static String key = "Q7VS-PJD5-9K8T-DWE9";
@@ -26,6 +27,7 @@ public class BartService {
     public ArrayList<Station> populateStations() {
         ArrayList<Station> stations = new ArrayList<Station>();
         String call = generateApiCall("stns", null);
+        new StationXmlTask().execute(call);
         //TODO parse call
         return stations;
     }
@@ -93,6 +95,16 @@ public class BartService {
         return legs;
     }
 
+    private void getDepartureTimes(Trip trip) {
+        Station station = trip.getStartingStation();
+        ArrayList<String> callArgs = new ArrayList<>();
+        callArgs.add("orig=" + station.getAbbreviation());
+        String call = generateApiCall("etd", callArgs);
+        //TODO parse call
+
+
+    }
+
     private ArrayList<Integer> getCrowding(Legs l) {//Station station, String route, String id) {
         ArrayList<Leg> legs = l.getLegs();
         ArrayList<String> callArgs = new ArrayList<>();
@@ -107,12 +119,13 @@ public class BartService {
             idString += "Id" + i+1 + "=" + station + route + id + "&";
         }
         /* Remove trailing & from string */
-        if (idString.endsWith("&") {
+        if (idString.endsWith("&")) {
             idString = idString.substring(0, idString.length()-1);
         }
         callArgs.add(idString);
         String call = generateApiCall("load", callArgs);
         //TODO parse call
+        return null;
     }
 
     public ArrayList<Advisory> getCurrentAdvisories() {

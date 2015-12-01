@@ -6,7 +6,7 @@ public class Station {
     private String address;
     private String zip;
 
-    public station(String abbreviation, String name, String address, String zip) {
+    public Station(String abbreviation, String name, String address, String zip) {
         this.abbreviation = abbreviation;
         this.name = name;
         this.address = address;
