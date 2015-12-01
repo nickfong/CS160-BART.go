@@ -17,8 +17,13 @@ hs_err_pid*
 *.swp
 .gradle
 /local.properties
-/.idea/workspace.xml
-/.idea/libraries
+Android/.idea/workspace.xml
+Android/.idea/libraries
+Android/Android.iml
+Android/build/*
 .DS_Store
 /build
 /captures
+
+# Private files
+Android/mobile/src/main/java/edu/berkeley/eecs/bartgo/PrivateConstants.java
