@@ -172,7 +172,7 @@ public class NavActivity extends Activity {
         String dLat = String.valueOf(i.getDoubleExtra("destLat", 999999));
         String dLng = String.valueOf(i.getDoubleExtra("destLng", 999999));
 
-        String url = "https://maps.googleapis.com/maps/api/directions/json?origin=" + oLat + "," + oLng + "&destination=" + dLat + "," + dLng + "&mode=walking&key=AIzaSyBTE2CQqCh-0LXhMyuWS8csfkyhQgF4n4c";
+        String url = "https://maps.googleapis.com/maps/api/directions/json?origin=" + oLat + "," + oLng + "&destination=" + dLat + "," + dLng + "&mode=walking&key=" + PrivateConstants.GOOGLE_API_KEY;
         return url;
     }
 
