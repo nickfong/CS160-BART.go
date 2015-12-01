@@ -32,15 +32,6 @@ public class BartService extends Service {
         return populateStations();
     }
 
-    @Override
-    public IBinder onBind(Intent intent) {
-        populateStations();
-        Log.i(TAG, "Populating stations in onBind");
-        return mBinder;
-        // TODO: Return the communication channel to the service.
-//        throw new UnsupportedOperationException("Not yet implemented");
-    }
-
     /**
      * generateApiCall generates the proper API URL for a given command and
      * optional arguments
@@ -76,7 +67,6 @@ public class BartService extends Service {
             for (String station : stationStrings) {
                 Log.i(TAG, "Got a station: " + station);
                 String[] stationString = station.split(";");
-                Log.i(TAG, String.valueOf(stationString));
                 if (stationString.length == 4) {
                     String abbreviation = stationString[0];
                     String name = stationString[1];
@@ -90,13 +80,34 @@ public class BartService extends Service {
         } catch (ExecutionException e) {
             Log.e(TAG, "XmlTask execution from populateStations failed: " + e);
         }
+        Log.i(TAG, "Found " + stations.size() + " stations.  Returning.");
         return stations;
     }
 
     private HashMap<Integer, Route> populateRoutes() {
         String call = generateApiCall("routes", null);
         HashMap<Integer, Route> routes = new HashMap<>();
-        //TODO parse call
+        try {
+            String result = new StationXmlTask().execute(call).get();
+            String[] routeStrings = result.split("\n");
+            for (String route : routeStrings) {
+                Log.i(TAG, "Got a route: " + route);
+                String[] routeString = route.split(";");
+                if (routeString.length == 5) {
+                    String name = routeString[0];
+                    String abbreviation = routeString[1];
+                    String id = routeString[2];
+                    String number = routeString[3];
+                    String color = routeString[4];
+                    routes.put(new Integer(id), new Route(name, abbreviation, id, number, color));
+                }
+            }
+        } catch (InterruptedException e) {
+            Log.e(TAG, "XmlTask execution from populateroutes was interupted: " + e);
+        } catch (ExecutionException e) {
+            Log.e(TAG, "XmlTask execution from populateroutes failed: " + e);
+        }
+        Log.i(TAG, "Found " + routes.size() + " routes");
         return routes;
     }
 
@@ -196,4 +207,12 @@ public class BartService extends Service {
             return BartService.this;
         }
     }
+
+    @Override
+    public IBinder onBind(Intent intent) {
+        populateStations();
+        Log.i(TAG, "Populating stations in onBind");
+        return mBinder;
+    }
+
 }
