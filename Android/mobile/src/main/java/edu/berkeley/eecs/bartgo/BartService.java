@@ -211,6 +211,7 @@ public class BartService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         populateStations();
+        populateRoutes();
         Log.i(TAG, "Populating stations in onBind");
         return mBinder;
     }
