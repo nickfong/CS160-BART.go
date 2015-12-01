@@ -46,9 +46,21 @@ public class StationXmlParser {
             // Starts by looking for the entry tag
             if (name.equals("stations")) {
                 Log.i(TAG, "Found stations tag");
-                stations.add(readEntry(parser));
+                while (parser.next() != XmlPullParser.END_TAG) {
+                    if (parser.getEventType() != XmlPullParser.START_TAG) {
+                        continue;
+                    }
+                    String currName = parser.getName();
+                    if (currName.equals("station")) {
+                        Log.i(TAG, "Found station");
+                        stations.add(readEntry(parser));
+                    } else {
+                        Log.i(TAG, "Found " + currName + " instead of a station");
+                        skip(parser);
+                    }
+                }
             } else {
-                Log.i(TAG, "Found " + name + " instead of a station");
+                Log.i(TAG, "Found " + name + " instead of stations");
                 skip(parser);
             }
         }
@@ -57,35 +69,27 @@ public class StationXmlParser {
 
     private Station readEntry(XmlPullParser parser) throws XmlPullParserException, IOException {
         Log.i(TAG, "At top of readEntry");
-        parser.require(XmlPullParser.START_TAG, ns, "stations");
+        parser.require(XmlPullParser.START_TAG, ns, "station");
         String abbreviation = null;
         String stationName = null;
         String address = null;
         String zip = null;
         while (parser.next() != XmlPullParser.END_TAG) {
-            if (parser.getEventType() != XmlPullParser.START_TAG) {
-                continue;
-            }
             String name = parser.getName();
-            if (name.equals("station")) {
-                Log.i(TAG, "Found station");
-                parser.require(XmlPullParser.START_TAG, ns, "station");
-                while (parser.next() != XmlPullParser.END_TAG) {
-                    if (name.equals("name")) {
-                        stationName = readName(parser);
-                    } else if (name.equals("abbr")) {
-                        abbreviation = readAbbr(parser);
-                    } else if (name.equals("address")) {
-                        address = readAddress(parser);
-                    } else if (name.equals("zipcode")) {
-                        zip = readZipcode(parser);
-                    } else {
-                        Log.i(TAG, "Found " + name);
-                        skip(parser);
-                    }
-                }
-            }
-            else {
+            if (name.equals("name")) {
+                Log.i(TAG, "Found " + name + " calling readName");
+                stationName = readName(parser);
+            } else if (name.equals("abbr")) {
+                Log.i(TAG, "Found " + name);
+                abbreviation = readAbbr(parser);
+            } else if (name.equals("address")) {
+                Log.i(TAG, "Found " + name);
+                address = readAddress(parser);
+            } else if (name.equals("zipcode")) {
+                Log.i(TAG, "Found " + name);
+                zip = readZipcode(parser);
+            } else {
+                Log.i(TAG, "Found " + name);
                 skip(parser);
             }
         }
@@ -93,6 +97,7 @@ public class StationXmlParser {
     }
 
     private String readName(XmlPullParser parser) throws IOException, XmlPullParserException {
+        Log.i(TAG, "Currently in readName, getName is " + parser.getName());
         parser.require(XmlPullParser.START_TAG, ns, "name");
         String name = readText(parser);
         parser.require(XmlPullParser.END_TAG, ns, "name");
