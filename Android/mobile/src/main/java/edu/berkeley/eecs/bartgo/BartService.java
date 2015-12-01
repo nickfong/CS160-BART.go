@@ -27,9 +27,7 @@ public class BartService {
     public ArrayList<Station> populateStations() {
         ArrayList<Station> stations = new ArrayList<Station>();
         String call = generateApiCall("stns", null);
-        new StationXmlTask().execute(call);
-        //TODO parse call
-        return stations;
+        return new StationXmlTask().execute(call);
     }
 
     /**

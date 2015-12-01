@@ -1,7 +1,7 @@
 public class StationXmlParser {
     private static final String ns = null;
 
-    public List parse(InputStream in) throws XmlPullParserException, IOException {
+    public ArrayList<Station> parse(InputStream in) throws XmlPullParserException, IOException {
         try {
             XmlPullParser parser = Xml.newPullParser();
             parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
@@ -16,8 +16,8 @@ public class StationXmlParser {
     /**
      * Extract each station entry in the XML
      */
-    private List readFeed(XmlPullParser parser) throws XmlPullParserException, IOException {
-        List entries = new ArrayList();
+    private ArrayList<Station> readFeed(XmlPullParser parser) throws XmlPullParserException, IOException {
+        ArrayList stations = new ArrayList();
 
         parser.require(XmlPullParser.START_TAG, ns, "feed");
         while (parser.next() != XmlPullParser.END_TAG) {
@@ -27,12 +27,12 @@ public class StationXmlParser {
             String name = parser.getName();
             // Starts by looking for the entry tag
             if (name.equals("station")) {
-                entries.add(readEntry(parser));
+                stations.add(readEntry(parser));
             } else {
                 skip(parser);
             }
         }
-        return entries;
+        return stations;
     }
 
     private Station readEntry(XmlPullParser parser) throws XmlPullParserException, IOException {
@@ -104,7 +104,6 @@ public class StationXmlParser {
                 break;
             }
         }
-     }
-
+    }
 }
 
