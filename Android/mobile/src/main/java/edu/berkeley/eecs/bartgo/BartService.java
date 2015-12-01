@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 public class BartService {
-    private final static String key = "Q7VS-PJD5-9K8T-DWE9";
     private HashMap<Integer, Route> routes;
 
     public ArrayList<Station> BartService() {
@@ -28,6 +27,7 @@ public class BartService {
         ArrayList<Station> stations = new ArrayList<Station>();
         String call = generateApiCall("stns", null);
         new StationXmlTask().execute(call);
+        return null;
     }
 
     /**
@@ -38,7 +38,7 @@ public class BartService {
      */
     private String generateApiCall(String command, ArrayList<String> arguments) {
         String prefix = "http://api.bart.gov/api/stn.aspx?cmd=";
-        String suffix = "&key=" + key;
+        String suffix = "&key=" + PrivateConstants.BART_API_KEY;
         String call = prefix + command;
         if (arguments != null) {
             for(int i = 0; i < arguments.size(); i++) {
