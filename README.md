@@ -6,6 +6,7 @@ BART.go is an application that aims to streamline the BART experience.
 Nick Fong -- @nickfong
 Daiwei Liu -- @daiweiliu
 Krystyn Neisess -- @krystynneisess
+Patrick Sun -- @packsun
 Michael Xu -- @michaelyxu
 
 ### License
