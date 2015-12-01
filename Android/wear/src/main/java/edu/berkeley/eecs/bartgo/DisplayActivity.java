@@ -1,12 +1,12 @@
 package edu.berkeley.eecs.bartgo;
 
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.NotificationManagerCompat;
 import android.support.wearable.activity.WearableActivity;
 import android.support.wearable.view.WatchViewStub;
 import android.util.Log;
@@ -18,6 +18,7 @@ import java.text.SimpleDateFormat;
 import java.util.Locale;
 
 public class DisplayActivity extends WearableActivity {
+    public static final String NAV_EXTRA = "NAV_DIRECTION";
 
     private static final SimpleDateFormat AMBIENT_DATE_FORMAT =
             new SimpleDateFormat("HH:mm", Locale.US);
@@ -59,10 +60,21 @@ public class DisplayActivity extends WearableActivity {
                         Toast.makeText(DisplayActivity.this, "Next Train", Toast.LENGTH_SHORT).show();
                         mPacingView.onSwipeUp();
                     }
+
+                    /* --- For Patrick ---
+                     * Just put the current navigation direction into the intend and start the
+                     * navigation activity.
+                     * You need to supply the correct current direction though. (although I think
+                     * that should be handled on the mobile side) */
+                    public void onSwipeRight() {
+                        Intent intent = new Intent(mContext, NavigationActivity.class);
+                        intent.putExtra(NAV_EXTRA, "Go straight, and turn left at Fulton/Bancroft");
+                        startActivity(intent);
+                    }
                 });
             }
         });
-        createAdvisoryNotification();
+        onReceiveNewAdvisory("Elevator out of service"); //example
     }
 
     @Override
@@ -100,17 +112,20 @@ public class DisplayActivity extends WearableActivity {
         unregisterReceiver(closeCurrent);
     }
 
-    public void createAdvisoryNotification() {
-        // Build notification
-        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
-//                .setSmallIcon(R.drawable.alert)
-                .setContentTitle("BART Advisory")
-                .setContentText("Elevator out of service");
-        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
-        notificationBuilder.setAutoCancel(true);
-
-        notificationManager.notify(0, notificationBuilder.build());
-        Log.v("MainActivity", "notified");
+    /* --- For Patrick ---
+     * Once you receive a new advisory just call this method with the content of the advisory,
+     * This method would pop up a dialog alert on the UI*/
+    public void onReceiveNewAdvisory(String content) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Advisory")
+                .setMessage(content)
+                .setNeutralButton(R.string.OK, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        // Do nothing. Just wait for dismiss
+                    }
+                });
+        AlertDialog dialog = builder.create();
+        dialog.show();
     }
 
     // Allow new routes to be received during current DisplayActivity
