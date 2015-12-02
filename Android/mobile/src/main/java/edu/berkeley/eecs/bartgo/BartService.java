@@ -159,7 +159,6 @@ public class BartService extends Service {
 
         Trip trip = new Trip(startStation, destinationStation, fare);
 
-        //TODO Implement generateLegs
         ArrayList<Legs> legs = generateLegs(startStation, destinationStation, time);
         trip.setLegs(legs);
 
