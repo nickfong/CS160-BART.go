@@ -12,8 +12,6 @@ import android.support.wearable.view.WatchViewStub;
 import android.util.Log;
 import android.widget.Toast;
 
-public class DisplayActivity extends WearableActivity {
-
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 
@@ -32,7 +30,6 @@ public class DisplayActivity extends WearableActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         registerReceiver(closeCurrent, new IntentFilter("close"));
-        mTextView = (TextView) findViewById(R.id.text);
         final WatchViewStub stub = (WatchViewStub) findViewById(R.id.watch_view_stub);
         stub.setOnLayoutInflatedListener(new WatchViewStub.OnLayoutInflatedListener() {
             @Override
