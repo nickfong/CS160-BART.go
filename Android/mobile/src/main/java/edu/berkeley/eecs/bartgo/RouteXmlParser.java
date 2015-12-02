@@ -11,26 +11,14 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RouteXmlParser {
+public class RouteXmlParser extends BartXmlParser {
     private static final String ns = null;
     private static final String TAG = "RouteXmlParser";
-
-    public List parse(InputStream in) throws XmlPullParserException, IOException {
-        try {
-            XmlPullParser parser = Xml.newPullParser();
-            parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
-            parser.setInput(in, null);
-            parser.nextTag();
-            return readFeed(parser);
-        } finally {
-            in.close();
-        }
-    }
 
     /**
      * Extract each Route entry in the XML
      */
-    private List readFeed(XmlPullParser parser) throws XmlPullParserException, IOException {
+    List readFeed(XmlPullParser parser) throws XmlPullParserException, IOException {
         ArrayList Routes = new ArrayList();
 
         parser.require(XmlPullParser.START_TAG, ns, "root");
@@ -119,32 +107,6 @@ public class RouteXmlParser {
         String color = readText(parser);
         parser.require(XmlPullParser.END_TAG, ns, "color");
         return color;
-    }
-
-    private void skip(XmlPullParser parser) throws XmlPullParserException, IOException {
-        if (parser.getEventType() != XmlPullParser.START_TAG) {
-            throw new IllegalStateException();
-        }
-        int depth = 1;
-        while (depth != 0) {
-            switch (parser.next()) {
-            case XmlPullParser.END_TAG:
-                depth--;
-                break;
-            case XmlPullParser.START_TAG:
-                depth++;
-                break;
-            }
-        }
-    }
-
-    private String readText(XmlPullParser parser) throws IOException, XmlPullParserException {
-        String result = "";
-        if (parser.next() == XmlPullParser.TEXT) {
-            result = parser.getText();
-            parser.nextTag();
-        }
-        return result;
     }
 }
 
