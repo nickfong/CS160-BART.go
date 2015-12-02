@@ -130,11 +130,23 @@ public class BartService extends Service {
         callArgs.add("orig=" + startStation.getAbbreviation());
         callArgs.add("dest=" + destinationStation.getAbbreviation());
         String call = generateApiCall("sched", "fare", callArgs);
-        //TODO parse call and fix call to Trip constructor
-        Trip trip = new Trip(startStation, destinationStation, 0.0f);
+        float fare = 0.0f;
+        try {
+            String result = new FareXmlTask().execute(call).get();
+            Log.i(TAG, "Result of API call is: " + result + "<");
+            fare = Float.parseFloat(result);
+        } catch (InterruptedException e) {
+            Log.e(TAG, "XmlTask execution from populateroutes was interupted: " + e);
+        } catch (ExecutionException e) {
+            Log.e(TAG, "XmlTask execution from populateroutes failed: " + e);
+        }
+        Log.i(TAG, "Found a fare of $" + fare);
 
-        ArrayList<Legs> legs = generateLegs(startStation, destinationStation, time);
-        trip.setLegs(legs);
+        Trip trip = new Trip(startStation, destinationStation, fare);
+
+        //TODO Implement generateLegs
+        //ArrayList<Legs> legs = generateLegs(startStation, destinationStation, time);
+        //trip.setLegs(legs);
 
         return trip;
     }
@@ -200,7 +212,7 @@ public class BartService extends Service {
         String call = generateApiCall("bsa", "bsa", null);
         ArrayList<Advisory> advisories = new ArrayList<>();
         try {
-            String result = new advisoryXmlTask().execute(call).get();
+            String result = new AdvisoryXmlTask().execute(call).get();
             Log.i(TAG, "Result of API call is: " + result + "<");
             String[] advisoryStrings = result.split("\n");
             for (String advisory : advisoryStrings) {
@@ -231,9 +243,10 @@ public class BartService extends Service {
 
     @Override
     public IBinder onBind(Intent intent) {
-        populateStations();
+        ArrayList<Station> stations = populateStations();
         populateRoutes();
         getCurrentAdvisories();
+        generateTrip(stations.get(0), stations.get(1), "foo");
         return mBinder;
     }
 

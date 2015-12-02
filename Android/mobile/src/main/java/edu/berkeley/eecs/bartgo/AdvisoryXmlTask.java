@@ -11,7 +11,7 @@ import java.net.URL;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
 
-class advisoryXmlTask extends AsyncTask<String, Void, String> {
+class AdvisoryXmlTask extends AsyncTask<String, Void, String> {
     private final String TAG = "advisoryXmlTask";
 
     @Override
