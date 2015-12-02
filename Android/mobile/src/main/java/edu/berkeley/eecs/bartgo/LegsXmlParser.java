@@ -61,6 +61,7 @@ public class LegsXmlParser {
                                 parser.require(XmlPullParser.START_TAG, ns, "trip");
                                 Log.i(TAG, "Found a trip");
                                 String currTrip = readEntry(parser);
+                                parser.require(XmlPullParser.END_TAG, ns, "trip");
                                 if (!legs.contains(currTrip)) {
                                     legs.add(currTrip);
                                 }
@@ -99,7 +100,7 @@ public class LegsXmlParser {
                 skip(parser);
             }
         }
-        parser.require(XmlPullParser.END_TAG, ns, "trip");
+//        parser.require(XmlPullParser.END_TAG, ns, "trip");
         return legs;
     }
 
@@ -114,6 +115,8 @@ public class LegsXmlParser {
 
         String currLeg = origin + ":" + destination+ ":" + head;
         Log.i(TAG, "Currleg is " + currLeg);
+
+        skip(parser);
 
 //        parser.require(XmlPullParser.END_TAG, ns, "leg");
 

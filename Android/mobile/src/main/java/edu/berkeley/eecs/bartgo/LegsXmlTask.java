@@ -49,7 +49,7 @@ class LegsXmlTask extends AsyncTask<String, Void, String> {
 
         String output_string = "";
         for (String l : legs) {
-            output_string += l + "\n"; //TODO This is wrong
+            output_string += l + "\n";
         }
         return output_string;
     }
