@@ -1,17 +1,13 @@
 package edu.berkeley.eecs.bartgo;
 
 public class Advisory {
-    protected String date;
-    protected String time;
     protected String id;
     protected String type;
-    protected String text;
+    protected String description;
 
-    public Advisory(String date, String time, String id, String type, String text) {
-        this.date = date;
-        this.time = time;
+    public Advisory(String id, String type, String description) {
         this.id = id;
         this.type = type;
-        this.text = text;
+        this.description = description;
     }
 }

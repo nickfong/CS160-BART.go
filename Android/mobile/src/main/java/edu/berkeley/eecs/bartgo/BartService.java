@@ -199,8 +199,26 @@ public class BartService extends Service {
     public ArrayList<Advisory> getCurrentAdvisories() {
         String call = generateApiCall("bsa", "bsa", null);
         ArrayList<Advisory> advisories = new ArrayList<>();
-        //TODO parse call
-
+        try {
+            String result = new advisoryXmlTask().execute(call).get();
+            Log.i(TAG, "Result of API call is: " + result + "<");
+            String[] advisoryStrings = result.split("\n");
+            for (String advisory : advisoryStrings) {
+                Log.i(TAG, "Got an advisory: " + advisory);
+                String[] advisoryString = advisory.split(";");
+                if (advisoryString.length == 3) {
+                    String id = advisoryString[0];
+                    String type = advisoryString[1];
+                    String description= advisoryString[2];
+                    advisories.add(new Advisory(id, type, description));
+                }
+            }
+        } catch (InterruptedException e) {
+            Log.e(TAG, "XmlTask execution from populateAdvisories was interupted: " + e);
+        } catch (ExecutionException e) {
+            Log.e(TAG, "XmlTask execution from populateAdvisories failed: " + e);
+        }
+        Log.i(TAG, "Found " + advisories.size() + " advisories.  Returning.");
         return advisories;
     }
 
@@ -215,7 +233,7 @@ public class BartService extends Service {
     public IBinder onBind(Intent intent) {
         populateStations();
         populateRoutes();
-        Log.i(TAG, "Populating stations in onBind");
+        getCurrentAdvisories();
         return mBinder;
     }
 
