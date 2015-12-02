@@ -42,6 +42,7 @@ public class LegsXmlParser {
             String name = parser.getName();
             // Starts by looking for the entry tag
             if (name.equals("schedule")) {
+                parser.require(XmlPullParser.START_TAG, ns, "schedule");
                 Log.i(TAG, "Found a schedule");
                 while (parser.next() != XmlPullParser.END_TAG) {
                     if (parser.getEventType() != XmlPullParser.START_TAG) {
@@ -57,10 +58,11 @@ public class LegsXmlParser {
                             }
                             String localName = parser.getName();
                             if (localName.equals("trip")) {
+                                parser.require(XmlPullParser.START_TAG, ns, "trip");
                                 Log.i(TAG, "Found a trip");
                                 String currTrip = readEntry(parser);
                                 if (!legs.contains(currTrip)) {
-                                    legs.add(currTrip); 
+                                    legs.add(currTrip);
                                 }
                             } else {
                                 Log.i(TAG, "Found " + currName + " instead of trip");
@@ -93,9 +95,11 @@ public class LegsXmlParser {
             if (name.equals("leg")) {
                 legs += readLeg(parser) + ";";
             } else {
+                Log.i(TAG, "Found " + name + " instead of leg");
                 skip(parser);
             }
         }
+        parser.require(XmlPullParser.END_TAG, ns, "trip");
         return legs;
     }
 
@@ -109,8 +113,9 @@ public class LegsXmlParser {
         String head = parser.getAttributeValue(null, "trainHeadStation");
 
         String currLeg = origin + ":" + destination+ ":" + head;
+        Log.i(TAG, "Currleg is " + currLeg);
 
-        parser.require(XmlPullParser.END_TAG, ns, "leg");
+//        parser.require(XmlPullParser.END_TAG, ns, "leg");
 
         return currLeg;
     }

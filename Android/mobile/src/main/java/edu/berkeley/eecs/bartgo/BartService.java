@@ -194,15 +194,17 @@ public class BartService extends Service {
             Log.i(TAG, "Result of API call is: " + result + "<");
             String[] legsArray = result.split("\n");
             for (String l : legsArray) {
-                Log.i(TAG, "Got a leg: " + legs);
+                Log.i(TAG, "Got a leg: " + l);
                 String[] legsString = l.split(";");
                 ArrayList<Leg> compiledLegs = new ArrayList();
                 for (String leg : legsString) {
-                    String[] legString = l.split(":");
+                    String[] legString = leg.split(":");
                     if (legString.length == 3) {
                         String start = legString[0];
                         String end = legString[1];
                         String trainDestination = legString[2];
+
+                        Log.i(TAG, "Start is " + start + " end is " + end + " headsign is " + trainDestination);
 
                         Station localStartStation = this.lookupStationByAbbreviation(start);
                         Station localEndStation = this.lookupStationByAbbreviation(end);
@@ -217,7 +219,7 @@ public class BartService extends Service {
         } catch (ExecutionException e) {
             Log.e(TAG, "XmlTask execution from populateroutes failed: " + e);
         }
-        Log.i(TAG, "Found " + routes.size() + " routes");
+        Log.i(TAG, "Found " + legs.size() + " legs");
 
         //TODO remove duplicate legs
 
@@ -272,7 +274,7 @@ public class BartService extends Service {
         ArrayList<Station> stations = populateStations();
         populateRoutes();
         getCurrentAdvisories();
-        generateTrip(stations.get(0), stations.get(1), "now");
+        generateTrip(stations.get(5), stations.get(13), "now");
         return mBinder;
     }
 

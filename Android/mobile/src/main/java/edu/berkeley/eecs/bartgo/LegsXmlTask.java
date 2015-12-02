@@ -36,7 +36,7 @@ class LegsXmlTask extends AsyncTask<String, Void, String> {
         InputStream stream = null;
         // Instantiate the parser
         LegsXmlParser legsParser = new LegsXmlParser();
-        ArrayList<Legs> legs = null;
+        ArrayList<String> legs = null;
 
         try {
             stream = downloadUrl(urlString);
@@ -48,8 +48,8 @@ class LegsXmlTask extends AsyncTask<String, Void, String> {
         }
 
         String output_string = "";
-        for (Legs l : legs) {
-            output_string += l.getLegs() + "\n"; //TODO This is wrong
+        for (String l : legs) {
+            output_string += l + "\n"; //TODO This is wrong
         }
         return output_string;
     }
