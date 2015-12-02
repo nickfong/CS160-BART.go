@@ -36,24 +36,32 @@ public class TrainXmlParser {
         parser.require(XmlPullParser.START_TAG, ns, "root");
         while (parser.next() != XmlPullParser.END_TAG) {
             if (parser.getEventType() != XmlPullParser.START_TAG) {
+                Log.i(TAG, "Continuing 1: " + parser.getName());
                 parser.next();
                 continue;
             }
             String name = parser.getName();
             // Starts by looking for the entry tag
             if (name.equals("station")) {
+                parser.require(XmlPullParser.START_TAG, ns, "station");
+                Log.i(TAG, "Found station");
                 while (parser.next() != XmlPullParser.END_TAG) {
                     if (parser.getEventType() != XmlPullParser.START_TAG) {
+                        Log.i(TAG, "Continuing");
                         continue;
                     }
                     String currName = parser.getName();
                     if (currName.equals("etd")) {
+                        Log.i(TAG, "Found etd");
                         estimates.add(readEtd(parser));
                     } else {
                         Log.i(TAG, "Found " + currName + " instead of etd");
                         skip(parser);
                     }
                 }
+            } else if (name.equals("etd")) {
+                Log.i(TAG, "Found an etd when I thought I'd find a station");
+                estimates.add(readEtd(parser));
             } else {
                 Log.i(TAG, "Found " + name + " instead of station");
                 skip(parser);
@@ -83,7 +91,7 @@ public class TrainXmlParser {
                 skip(parser);
             }
         }
-        return abbreviation + ":" + estimates;
+        return abbreviation + ":" + estimates.substring(0, estimates.length()-1);
     }
 
     private String readDestination(XmlPullParser parser) throws IOException, XmlPullParserException {

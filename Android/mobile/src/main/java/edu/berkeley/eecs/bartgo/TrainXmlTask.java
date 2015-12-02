@@ -51,7 +51,7 @@ class TrainXmlTask extends AsyncTask<String, Void, String> {
         for (String s : trains) {
             estimate += s + ";";
         }
-        return estimate;
+        return estimate.substring(0, estimate.length() - 1);
     }
 
     // Given a string representation of a URL, sets up a connection and gets

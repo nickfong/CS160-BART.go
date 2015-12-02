@@ -230,9 +230,29 @@ public class BartService extends Service {
         ArrayList<String> callArgs = new ArrayList<>();
         callArgs.add("orig=" + station.getAbbreviation());
         String call = generateApiCall("etd", "etd", callArgs);
-        //TODO parse call
+        HashMap<String, ArrayList<Integer>> departureTimes = new HashMap();
+        try {
+            String result = new TrainXmlTask().execute(call).get();
+            Log.i(TAG, "Result of API call is: " + result + "<");
 
-
+            String[] etdArray = result.split(";");
+            for (String etd : etdArray) {
+                String[] estimateArray = etd.split(":");
+                String destinationAbbreviation = estimateArray[0];
+                String[] estimatesArray = estimateArray[1].split(",");
+                ArrayList<Integer> estimates = new ArrayList();
+                for (String estimate : estimatesArray) {
+                    estimates.add(Integer.valueOf(estimate));
+                }
+                departureTimes.put(destinationAbbreviation, estimates);
+                Log.i(TAG, "Putting " + destinationAbbreviation + ":" + estimates);
+            }
+        } catch (InterruptedException e) {
+            Log.e(TAG, "XmlTask execution from populateStations was interupted: " + e);
+        } catch (ExecutionException e) {
+            Log.e(TAG, "XmlTask execution from populateStations failed: " + e);
+        }
+        Log.i(TAG, String.valueOf(departureTimes));
     }
 
     public ArrayList<Advisory> getCurrentAdvisories() {
@@ -273,8 +293,8 @@ public class BartService extends Service {
         ArrayList<Station> stations = populateStations();
         populateRoutes();
         getCurrentAdvisories();
-        generateTrip(stations.get(5), stations.get(13), "now");
+        Trip t = generateTrip(stations.get(5), stations.get(13), "now");
+        getDepartureTimes(t);
         return mBinder;
     }
-
 }

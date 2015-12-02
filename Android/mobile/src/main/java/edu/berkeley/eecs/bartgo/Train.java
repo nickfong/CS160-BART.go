@@ -8,16 +8,14 @@ public class Train {
     private Station embarkationStation;
     private Station debarkationStation;
     private int arrivalMinutes;
-    private int crowding;
-    private int id;
+//    private int crowding;
+//    private int id;
 
-    public Train(int arrivalMinutes, int crowding, Station trainDestination, Station embarkationStation, Station debarkationStation, int id) {
+    public Train(int arrivalMinutes, Station trainDestination, Station embarkationStation, Station debarkationStation) {
         this.arrivalMinutes = arrivalMinutes;
-        this.crowding = crowding;
         this.trainDestination = trainDestination;
         this.embarkationStation = embarkationStation;
         this.debarkationStation = debarkationStation;
-        this.id = id;
     }
 
     public void setArrivalMinutes(int minutes) {
@@ -38,14 +36,6 @@ public class Train {
 
     public Station getDebarkation() {
         return this.debarkationStation;
-    }
-
-    public int getId() {
-        return this.id;
-    }
-
-    public int getCrowding() {
-        return this.crowding;
     }
 
 }
