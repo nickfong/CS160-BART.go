@@ -242,7 +242,12 @@ public class BartService extends Service {
                 String[] estimatesArray = estimateArray[1].split(",");
                 ArrayList<Integer> estimates = new ArrayList();
                 for (String estimate : estimatesArray) {
-                    estimates.add(Integer.valueOf(estimate));
+                    if (estimate.equals("Leaving")) {
+                        estimates.add(new Integer(0));
+                    }
+                    else {
+                        estimates.add(Integer.valueOf(estimate));
+                    }
                 }
                 departureTimes.put(destinationAbbreviation, estimates);
                 Log.i(TAG, "Putting " + destinationAbbreviation + ":" + estimates);
