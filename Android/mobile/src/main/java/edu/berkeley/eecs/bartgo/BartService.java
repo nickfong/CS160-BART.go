@@ -21,16 +21,13 @@ public class BartService extends Service {
     private final IBinder mBinder = new LocalBinder();
 
     /**
-     * The BartService constructor calls populateStations() to get an ArrayList
-     * of Station objects corresponding to all stations that currently exist in
-     * the BART system.  The constructor should be called to ensure that valid
-     * stations are listed in the application.
-     * @return an ArrayList of Station objects corresponding to all valid
-     *         stations
+     * The BartService constructor calls populateStations() and
+     * poopulateRoutes() to populate the internal ArrayList of BART Stations and
+     * Routes, respectively.
      */
     public BartService() {
-        this.routes = populateRoutes();
         this.stations = populateStations();
+        this.routes = populateRoutes();
     }
 
     /**
@@ -60,7 +57,7 @@ public class BartService extends Service {
      * @return an ArrayList of Station objects corresponding to all valid
      *         stations
      */
-    public ArrayList<Station> populateStations() {
+    private ArrayList<Station> populateStations() {
         ArrayList<Station> stations = new ArrayList<Station>();
         String call = generateApiCall("stn", "stns", null);
         try {
@@ -79,12 +76,26 @@ public class BartService extends Service {
                 }
             }
         } catch (InterruptedException e) {
-            Log.e(TAG, "XmlTask execution from populateStations was interupted: " + e);
+            Log.e(TAG, "XmlTask execution from populateStations was interrupted: " + e);
         } catch (ExecutionException e) {
             Log.e(TAG, "XmlTask execution from populateStations failed: " + e);
         }
         Log.i(TAG, "Found " + stations.size() + " stations.  Returning.");
+        this.stations = stations;
         return stations;
+    }
+
+    /**
+     * getStations() returns the internal list of stations, populating the
+     * internal list if necessary.
+     * @return an ArrayList of Station objects corresponding to all valid
+     *         stations
+     */
+    public ArrayList<Station> getStations() {
+        if (this.stations == null || this.statios.size() == 0) {
+            populateStations();
+        }
+        return this.stations;
     }
 
     /**
@@ -101,6 +112,10 @@ public class BartService extends Service {
         return null;
     }
 
+    /**
+     * Populates the internal ArrayList of Routes
+     * @return an ArrayList of valid BART Routes
+     */
     private HashMap<Integer, Route> populateRoutes() {
         String call = generateApiCall("route", "routes", null);
         HashMap<Integer, Route> routes = new HashMap<>();
@@ -121,11 +136,12 @@ public class BartService extends Service {
                 }
             }
         } catch (InterruptedException e) {
-            Log.e(TAG, "XmlTask execution from populateroutes was interupted: " + e);
+            Log.e(TAG, "XmlTask execution from populateroutes was interrupted: " + e);
         } catch (ExecutionException e) {
             Log.e(TAG, "XmlTask execution from populateroutes failed: " + e);
         }
         Log.i(TAG, "Found " + routes.size() + " routes");
+        this.routes = routes;
         return routes;
     }
 
@@ -151,9 +167,9 @@ public class BartService extends Service {
             Log.i(TAG, "Result of API call is: " + result + "<");
             fare = Float.parseFloat(result);
         } catch (InterruptedException e) {
-            Log.e(TAG, "XmlTask execution from populateroutes was interupted: " + e);
+            Log.e(TAG, "XmlTask execution from generateTrip was interrupted: " + e);
         } catch (ExecutionException e) {
-            Log.e(TAG, "XmlTask execution from populateroutes failed: " + e);
+            Log.e(TAG, "XmlTask execution from generateTrip failed: " + e);
         }
         Log.i(TAG, "Found a fare of $" + fare);
 
@@ -163,14 +179,6 @@ public class BartService extends Service {
         trip.setLegs(legs);
 
         return trip;
-    }
-
-    public void softRefresh(Trip trip, String time) {
-        //TODO Update the trip
-    }
-
-    public void hardRefresh(Trip trip, String time) {
-        //TODO Update the trip
     }
 
     /**
@@ -214,9 +222,9 @@ public class BartService extends Service {
                 legs.add(new Legs(compiledLegs));
             }
         } catch (InterruptedException e) {
-            Log.e(TAG, "XmlTask execution from populateroutes was interupted: " + e);
+            Log.e(TAG, "XmlTask execution from generateLegs was interrupted: " + e);
         } catch (ExecutionException e) {
-            Log.e(TAG, "XmlTask execution from populateroutes failed: " + e);
+            Log.e(TAG, "XmlTask execution from generateLegs failed: " + e);
         }
         Log.i(TAG, "Found " + legs.size() + " legs");
 
@@ -225,7 +233,11 @@ public class BartService extends Service {
         return legs;
     }
 
-    private void getDepartureTimes(Trip trip) {
+    /**
+     * Update the departure times for all first legs of a Trip.
+     * @param trip is the Trip in question
+     */
+    public void updateDepartureTimes(Trip trip) {
         Station station = trip.getStartingStation();
         ArrayList<String> callArgs = new ArrayList<>();
         callArgs.add("orig=" + station.getAbbreviation());
@@ -233,7 +245,6 @@ public class BartService extends Service {
         HashMap<String, ArrayList<Integer>> departureTimes = new HashMap();
         try {
             String result = new TrainXmlTask().execute(call).get();
-            Log.i(TAG, "Result of API call is: " + result + "<");
 
             String[] etdArray = result.split(";");
             for (String etd : etdArray) {
@@ -250,12 +261,11 @@ public class BartService extends Service {
                     }
                 }
                 departureTimes.put(destinationAbbreviation, estimates);
-                Log.i(TAG, "Putting " + destinationAbbreviation + ":" + estimates);
             }
         } catch (InterruptedException e) {
-            Log.e(TAG, "XmlTask execution from populateStations was interupted: " + e);
+            Log.e(TAG, "XmlTask execution from getDepartureTimes was interrupted: " + e);
         } catch (ExecutionException e) {
-            Log.e(TAG, "XmlTask execution from populateStations failed: " + e);
+            Log.e(TAG, "XmlTask execution from getDepartureTimes failed: " + e);
         }
         Log.i(TAG, String.valueOf(departureTimes));
 
@@ -275,12 +285,16 @@ public class BartService extends Service {
         }
     }
 
+    /**
+     * Queries for current advisories and returns an ArrayList of active
+     * advisories.
+     * @return an ArrayList of Advisory objects
+     */
     public ArrayList<Advisory> getCurrentAdvisories() {
         String call = generateApiCall("bsa", "bsa", null);
         ArrayList<Advisory> advisories = new ArrayList<>();
         try {
             String result = new AdvisoryXmlTask().execute(call).get();
-            Log.i(TAG, "Result of API call is: " + result + "<");
             String[] advisoryStrings = result.split("\n");
             for (String advisory : advisoryStrings) {
                 Log.i(TAG, "Got an advisory: " + advisory);
@@ -293,7 +307,7 @@ public class BartService extends Service {
                 }
             }
         } catch (InterruptedException e) {
-            Log.e(TAG, "XmlTask execution from populateAdvisories was interupted: " + e);
+            Log.e(TAG, "XmlTask execution from populateAdvisories was interrupted: " + e);
         } catch (ExecutionException e) {
             Log.e(TAG, "XmlTask execution from populateAdvisories failed: " + e);
         }
@@ -303,18 +317,19 @@ public class BartService extends Service {
 
     public class LocalBinder extends Binder {
         BartService getService() {
-            // Return this instance of LocalService so clients can call public methods
             return BartService.this;
         }
     }
 
     @Override
     public IBinder onBind(Intent intent) {
+        // Testing code
         ArrayList<Station> stations = populateStations();
         populateRoutes();
         getCurrentAdvisories();
         Trip t = generateTrip(stations.get(5), stations.get(13), "now");
         getDepartureTimes(t);
+        // End testing code
         return mBinder;
     }
 }
