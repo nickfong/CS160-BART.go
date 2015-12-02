@@ -31,7 +31,7 @@ public class LegsXmlParser {
      * Extract each legs entry in the XML
      */
     private List readFeed(XmlPullParser parser) throws XmlPullParserException, IOException {
-        ArrayList legs = new ArrayList();
+        ArrayList<String> legs = new ArrayList();
 
         parser.require(XmlPullParser.START_TAG, ns, "root");
         while (parser.next() != XmlPullParser.END_TAG) {
@@ -42,12 +42,14 @@ public class LegsXmlParser {
             String name = parser.getName();
             // Starts by looking for the entry tag
             if (name.equals("schedule")) {
+                Log.i(TAG, "Found a schedule");
                 while (parser.next() != XmlPullParser.END_TAG) {
                     if (parser.getEventType() != XmlPullParser.START_TAG) {
                         continue;
                     }
                     String currName = parser.getName();
                     if (currName.equals("request")) {
+                        Log.i(TAG, "Found a request");
                         parser.require(XmlPullParser.START_TAG, ns, "request");
                         while (parser.next() != XmlPullParser.END_TAG) {
                             if (parser.getEventType() != XmlPullParser.START_TAG) {
@@ -55,85 +57,62 @@ public class LegsXmlParser {
                             }
                             String localName = parser.getName();
                             if (localName.equals("trip")) {
-                                legs.add(readEntry(parser));
+                                Log.i(TAG, "Found a trip");
+                                String currTrip = readEntry(parser);
+                                if (!legs.contains(currTrip)) {
+                                    legs.add(currTrip); 
+                                }
                             } else {
-                                Log.i(TAG, "Found " + currName + " instead of a legs");
+                                Log.i(TAG, "Found " + currName + " instead of trip");
                                 skip(parser);
                             }
                         }
                     } else {
-                        Log.i(TAG, "Found " + name + " instead of legs");
+                        Log.i(TAG, "Found " + name + " instead of request");
                         skip(parser);
                     }
                 }
             } else {
-                Log.i(TAG, "Found " + name + " instead of legs");
+                Log.i(TAG, "Found " + name + " instead of schedule");
                 skip(parser);
             }
         }
         return legs;
     }
 
-    private Legs readEntry(XmlPullParser parser) throws XmlPullParserException, IOException {
+
+    private String readEntry(XmlPullParser parser) throws XmlPullParserException, IOException {
         Log.i(TAG, "At top of readEntry");
         parser.require(XmlPullParser.START_TAG, ns, "trip");
-        String legsName = null;
-        String abbreviation = null;
-        String Id = null;
-        String number = null;
-        String color = null;
+        String legs = "";
         while (parser.next() != XmlPullParser.END_TAG) {
+            if (parser.getEventType() != XmlPullParser.START_TAG) {
+                continue;
+            }
             String name = parser.getName();
-            if (name.equals("name")) {
-                legsName = readName(parser);
-            } else if (name.equals("abbr")) {
-                abbreviation = readAbbr(parser);
-            } else if (name.equals("legsID")) {
-                Id = readlegsID(parser);
-            } else if (name.equals("number")) {
-                number = readNumber(parser);
-            } else if (name.equals("color")) {
-                color = readColor(parser);
+            if (name.equals("leg")) {
+                legs += readLeg(parser) + ";";
             } else {
                 skip(parser);
             }
         }
-        return null;//new legs(legsName, abbreviation, Id, number, color);
+        return legs;
     }
 
-    private String readName(XmlPullParser parser) throws IOException, XmlPullParserException {
-        parser.require(XmlPullParser.START_TAG, ns, "name");
-        String name = readText(parser);
-        parser.require(XmlPullParser.END_TAG, ns, "name");
-        return name;
-    }
+    private String readLeg(XmlPullParser parser) throws XmlPullParserException, IOException {
+        Log.i(TAG, "At top of readLeg");
+        parser.require(XmlPullParser.START_TAG, ns, "leg");
+        String order = parser.getAttributeValue(null, "order");
+        String origin = parser.getAttributeValue(null, "origin");
+        String destination = parser.getAttributeValue(null, "destination");
+        String line = parser.getAttributeValue(null, "line");
+        String head = parser.getAttributeValue(null, "trainHeadStation");
 
-    private String readAbbr(XmlPullParser parser) throws IOException, XmlPullParserException {
-        parser.require(XmlPullParser.START_TAG, ns, "abbr");
-        String abbr = readText(parser);
-        parser.require(XmlPullParser.END_TAG, ns, "abbr");
-        return abbr;
-    }
+        String currLeg = origin + ":" + destination+ ":" + head;
 
-    private String readlegsID(XmlPullParser parser) throws IOException, XmlPullParserException {
-        parser.require(XmlPullParser.START_TAG, ns, "legsID");
-        String legsID = readText(parser);
-        parser.require(XmlPullParser.END_TAG, ns, "legsID");
-        return legsID;
-    }
+        parser.require(XmlPullParser.END_TAG, ns, "leg");
 
-    private String readNumber(XmlPullParser parser) throws IOException, XmlPullParserException {
-        parser.require(XmlPullParser.START_TAG, ns, "number");
-        String number = readText(parser);
-        parser.require(XmlPullParser.END_TAG, ns, "number");
-        return number;
-    }
-
-    private String readColor(XmlPullParser parser) throws IOException, XmlPullParserException {
-        parser.require(XmlPullParser.START_TAG, ns, "color");
-        String color = readText(parser);
-        parser.require(XmlPullParser.END_TAG, ns, "color");
-        return color;
+        return currLeg;
     }
 
     private void skip(XmlPullParser parser) throws XmlPullParserException, IOException {

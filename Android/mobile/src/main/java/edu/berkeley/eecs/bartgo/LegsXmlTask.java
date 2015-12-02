@@ -12,7 +12,7 @@ import java.net.HttpURLConnection;
 import java.util.ArrayList;
 
 class LegsXmlTask extends AsyncTask<String, Void, String> {
-    private final String TAG = "DepartXmlTask";
+    private final String TAG = "LegsXmlTask";
 
     @Override
     protected String doInBackground(String... urls) {
@@ -35,23 +35,23 @@ class LegsXmlTask extends AsyncTask<String, Void, String> {
     private String loadXmlFromNetwork(String urlString) throws XmlPullParserException, IOException {
         InputStream stream = null;
         // Instantiate the parser
-        LegsXmlParser departParser = new LegsXmlParser();
+        LegsXmlParser legsParser = new LegsXmlParser();
         ArrayList<Legs> legs = null;
 
         try {
             stream = downloadUrl(urlString);
-            legs = (ArrayList)departParser.parse(stream);
+            legs = (ArrayList)legsParser.parse(stream);
         } finally {
             if (stream != null) {
                 stream.close();
             }
         }
 
-        String depart_string = "";
+        String output_string = "";
         for (Legs l : legs) {
-            depart_string += "Foo";//leg.startStation+ ";" + leg.endStation+ ";" + leg.trainDestination + "\n";
+            output_string += l.getLegs() + "\n"; //TODO This is wrong
         }
-        return depart_string;
+        return output_string;
     }
 
     // Given a string representation of a URL, sets up a connection and gets

@@ -17,7 +17,7 @@ import java.util.concurrent.ExecutionException;
 public class BartService extends Service {
     private final String TAG = "BartService";
     private HashMap<Integer, Route> routes;
-    private ArrayList<Station> stations;
+    private ArrayList<Station> stations = null;
     private final IBinder mBinder = new LocalBinder();
 
     /**
@@ -135,7 +135,7 @@ public class BartService extends Service {
      *        station of the user
      * @param destinationStation is a Station object corresponding to the
      *        destination station of the user
-     * @param time is a String, formatted h:mm+am|pm specifying what time the
+     * @param time is a String, formatted hh:mm [AM|PM] specifying what time the
      *        earliest trip should be
      * @return a valid Trip corresponding to a Trip between startStation and
      *         destinationStation
@@ -160,8 +160,8 @@ public class BartService extends Service {
         Trip trip = new Trip(startStation, destinationStation, fare);
 
         //TODO Implement generateLegs
-        //ArrayList<Legs> legs = generateLegs(startStation, destinationStation, time);
-        //trip.setLegs(legs);
+        ArrayList<Legs> legs = generateLegs(startStation, destinationStation, time);
+        trip.setLegs(legs);
 
         return trip;
     }
@@ -174,6 +174,10 @@ public class BartService extends Service {
         //TODO Update the trip
     }
 
+    /**
+     * Compiles an ArrayList of Legs (which are basically ArrayLists of Leg
+     * objects).
+     */
     private ArrayList<Legs> generateLegs(Station startStation, Station destinationStation, String time) {
         ArrayList<String> callArgs = new ArrayList<>();
         callArgs.add("orig=" + startStation.getAbbreviation());
@@ -188,18 +192,25 @@ public class BartService extends Service {
         try {
             String result = new LegsXmlTask().execute(call).get();
             Log.i(TAG, "Result of API call is: " + result + "<");
-            String[] routeStrings = result.split("\n");
-            for (String route : routeStrings) {
-                Log.i(TAG, "Got a route: " + route);
-                String[] routeString = route.split(";");
-                if (routeString.length == 5) {
-                    String name = routeString[0];
-                    String abbreviation = routeString[1];
-                    String id = routeString[2];
-                    String number = routeString[3];
-                    String color = routeString[4];
-                    routes.put(new Integer(number), new Route(name, abbreviation, id, number, color));
+            String[] legsArray = result.split("\n");
+            for (String l : legsArray) {
+                Log.i(TAG, "Got a leg: " + legs);
+                String[] legsString = l.split(";");
+                ArrayList<Leg> compiledLegs = new ArrayList();
+                for (String leg : legsString) {
+                    String[] legString = l.split(":");
+                    if (legString.length == 3) {
+                        String start = legString[0];
+                        String end = legString[1];
+                        String trainDestination = legString[2];
+
+                        Station localStartStation = this.lookupStationByAbbreviation(start);
+                        Station localEndStation = this.lookupStationByAbbreviation(end);
+
+                        compiledLegs.add(new Leg(localStartStation, localEndStation, trainDestination));
+                    }
                 }
+                legs.add(new Legs(compiledLegs));
             }
         } catch (InterruptedException e) {
             Log.e(TAG, "XmlTask execution from populateroutes was interupted: " + e);
@@ -208,7 +219,6 @@ public class BartService extends Service {
         }
         Log.i(TAG, "Found " + routes.size() + " routes");
 
-        //TODO parse call
         //TODO remove duplicate legs
 
         return legs;
@@ -262,7 +272,7 @@ public class BartService extends Service {
         ArrayList<Station> stations = populateStations();
         populateRoutes();
         getCurrentAdvisories();
-        generateTrip(stations.get(0), stations.get(1), "foo");
+        generateTrip(stations.get(0), stations.get(1), "now");
         return mBinder;
     }
 
