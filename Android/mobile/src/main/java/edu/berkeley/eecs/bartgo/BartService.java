@@ -258,6 +258,21 @@ public class BartService extends Service {
             Log.e(TAG, "XmlTask execution from populateStations failed: " + e);
         }
         Log.i(TAG, String.valueOf(departureTimes));
+
+        ArrayList<Legs> legsArrayList = trip.getLegs();
+        for (Legs legs : legsArrayList) {
+            ArrayList<Leg> legArrayList = legs.getLegs();
+            Leg firstLeg = legArrayList.get(0);
+            String destination = firstLeg.trainDestination;
+            if (departureTimes.containsKey(destination)) {
+                firstLeg.setTrains(departureTimes.get(destination));
+                Log.i(TAG, "Setting departure times for " + destination + " bound train");
+                Log.i(TAG, "Leg goes from " + firstLeg.startStation.getAbbreviation() + " to " + firstLeg.endStation.getAbbreviation());
+            }
+            else {
+                Log.i(TAG, "Couldn't find departure times for " + destination + " bound train");
+            }
+        }
     }
 
     public ArrayList<Advisory> getCurrentAdvisories() {

@@ -6,7 +6,7 @@ public class Leg {
     protected Station startStation;
     protected Station endStation;
     protected String trainDestination;
-    protected ArrayList<Train> trains;
+    protected ArrayList<Integer> trains;
 //    protected Route route;
 //    protected int startingTrainId;
 
@@ -19,7 +19,7 @@ public class Leg {
 //        this.startingTrainId = startingTrainId;
     }
 
-    public void setTrains(ArrayList<Train> trains) {
+    public void setTrains(ArrayList<Integer> trains) {
         this.trains = trains;
     }
 }
