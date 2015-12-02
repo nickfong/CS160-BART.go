@@ -41,32 +41,15 @@ public class AdvisoryXmlParser {
             String name = parser.getName();
             // Starts by looking for the entry tag
             if (name.equals("bsa")) {
-                Log.i(TAG, "Calling readEntry");
-                advisories.add(readEntry(parser));
-                /*
-                while (parser.next() != XmlPullParser.END_TAG) {
-                    if (parser.getEventType() != XmlPullParser.START_TAG) {
-                        continue;
-                    }
-                    String currName = parser.getName();
-                    if (currName.equals("Advisory")) {
-                        Advisorys.add(readEntry(parser));
-                    } else {
-                        Log.i(TAG, "Found " + currName + " instead of a Advisory");
-                        skip(parser);
-                    }
-                }
-                */
+                advisories.add(readBsa(parser));
             } else {
-                Log.i(TAG, "Found " + name + " instead of advisories");
                 skip(parser);
             }
         }
         return advisories;
     }
 
-    private Advisory readEntry(XmlPullParser parser) throws XmlPullParserException, IOException {
-        Log.i(TAG, "At top of readEntry");
+    private Advisory readBsa(XmlPullParser parser) throws XmlPullParserException, IOException {
         parser.require(XmlPullParser.START_TAG, ns, "bsa");
         String id = parser.getAttributeValue(null, "id");
         String type = null;
@@ -83,7 +66,6 @@ public class AdvisoryXmlParser {
             } else if (name.equals("description")) {
                 description = readDescription(parser);
             } else {
-                Log.i(TAG, "Found " + name + " instead of anything in bsa");
                 skip(parser);
             }
         }

@@ -48,22 +48,19 @@ public class RouteXmlParser {
                     }
                     String currName = parser.getName();
                     if (currName.equals("route")) {
-                        Routes.add(readEntry(parser));
+                        Routes.add(readRoute(parser));
                     } else {
-                        Log.i(TAG, "Found " + currName + " instead of a Route");
                         skip(parser);
                     }
                 }
             } else {
-                Log.i(TAG, "Found " + name + " instead of routes");
                 skip(parser);
             }
         }
         return Routes;
     }
 
-    private Route readEntry(XmlPullParser parser) throws XmlPullParserException, IOException {
-        Log.i(TAG, "At top of readEntry");
+    private Route readRoute(XmlPullParser parser) throws XmlPullParserException, IOException {
         parser.require(XmlPullParser.START_TAG, ns, "route");
         String routeName = null;
         String abbreviation = null;

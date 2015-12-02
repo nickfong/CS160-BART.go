@@ -48,21 +48,19 @@ public class StationXmlParser {
                     }
                     String currName = parser.getName();
                     if (currName.equals("station")) {
-                        stations.add(readEntry(parser));
+                        stations.add(readStation(parser));
                     } else {
-                        Log.i(TAG, "Found " + currName + " instead of a station");
                         skip(parser);
                     }
                 }
             } else {
-                Log.i(TAG, "Found " + name + " instead of stations");
                 skip(parser);
             }
         }
         return stations;
     }
 
-    private Station readEntry(XmlPullParser parser) throws XmlPullParserException, IOException {
+    private Station readStation(XmlPullParser parser) throws XmlPullParserException, IOException {
         parser.require(XmlPullParser.START_TAG, ns, "station");
         String abbreviation = null;
         String stationName = null;

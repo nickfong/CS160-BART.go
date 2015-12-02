@@ -62,7 +62,6 @@ public class BartService extends Service {
         String call = generateApiCall("stn", "stns", null);
         try {
             String result = new StationXmlTask().execute(call).get();
-            Log.i(TAG, "Result of API call is: " + result + "<");
             String[] stationStrings = result.split("\n");
             for (String station : stationStrings) {
                 Log.i(TAG, "Got a station: " + station);
@@ -92,7 +91,7 @@ public class BartService extends Service {
      *         stations
      */
     public ArrayList<Station> getStations() {
-        if (this.stations == null || this.statios.size() == 0) {
+        if (this.stations == null || this.stations.size() == 0) {
             populateStations();
         }
         return this.stations;
@@ -121,7 +120,6 @@ public class BartService extends Service {
         HashMap<Integer, Route> routes = new HashMap<>();
         try {
             String result = new RouteXmlTask().execute(call).get();
-            Log.i(TAG, "Result of API call is: " + result + "<");
             String[] routeStrings = result.split("\n");
             for (String route : routeStrings) {
                 Log.i(TAG, "Got a route: " + route);
@@ -164,7 +162,6 @@ public class BartService extends Service {
         float fare = 0.0f;
         try {
             String result = new FareXmlTask().execute(call).get();
-            Log.i(TAG, "Result of API call is: " + result + "<");
             fare = Float.parseFloat(result);
         } catch (InterruptedException e) {
             Log.e(TAG, "XmlTask execution from generateTrip was interrupted: " + e);
@@ -198,7 +195,6 @@ public class BartService extends Service {
 
         try {
             String result = new LegsXmlTask().execute(call).get();
-            Log.i(TAG, "Result of API call is: " + result + "<");
             String[] legsArray = result.split("\n");
             for (String l : legsArray) {
                 Log.i(TAG, "Got a leg: " + l);
@@ -328,7 +324,7 @@ public class BartService extends Service {
         populateRoutes();
         getCurrentAdvisories();
         Trip t = generateTrip(stations.get(5), stations.get(13), "now");
-        getDepartureTimes(t);
+        updateDepartureTimes(t);
         // End testing code
         return mBinder;
     }

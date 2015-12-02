@@ -41,16 +41,15 @@ public class FareXmlParser {
             }
             String name = parser.getName();
             if (name.equals("trip")) {
-                fares.add(readEntry(parser));
+                fares.add(readTrip(parser));
             } else {
-                Log.i(TAG, "Found " + name + " instead of trip");
                 skip(parser);
             }
         }
         return fares;
     }
 
-    private String readEntry(XmlPullParser parser) throws XmlPullParserException, IOException {
+    private String readTrip(XmlPullParser parser) throws XmlPullParserException, IOException {
         String fare = null;
         while (parser.next() != XmlPullParser.END_TAG) {
             String name = parser.getName();
