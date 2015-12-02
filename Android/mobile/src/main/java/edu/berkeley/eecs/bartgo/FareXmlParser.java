@@ -42,18 +42,6 @@ public class FareXmlParser {
             String name = parser.getName();
             if (name.equals("trip")) {
                 fares.add(readEntry(parser));
-//                while (parser.next() != XmlPullParser.END_TAG) {
-//                    if (parser.getEventType() != XmlPullParser.START_TAG) {
-//                        continue;
-//                    }
-//                    String currName = parser.getName();
-//                    if (currName.equals("fare")) {
-//                        fares.add(readEntry(parser));
-//                    } else {
-//                        Log.i(TAG, "Found " + currName + " instead of a fare");
-//                        skip(parser);
-//                    }
-//                }
             } else {
                 Log.i(TAG, "Found " + name + " instead of trip");
                 skip(parser);
@@ -63,8 +51,6 @@ public class FareXmlParser {
     }
 
     private String readEntry(XmlPullParser parser) throws XmlPullParserException, IOException {
-        Log.i(TAG, "At top of readEntry");
-       // parser.require(XmlPullParser.START_TAG, ns, "fare");
         String fare = null;
         while (parser.next() != XmlPullParser.END_TAG) {
             String name = parser.getName();

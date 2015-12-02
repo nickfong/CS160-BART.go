@@ -169,6 +169,30 @@ public class BartService extends Service {
         String call = generateApiCall("sched", "depart", callArgs);
 
         ArrayList<Legs> legs = new ArrayList<>();
+
+        try {
+            String result = new DepartXmlTask().execute(call).get();
+            Log.i(TAG, "Result of API call is: " + result + "<");
+            String[] routeStrings = result.split("\n");
+            for (String route : routeStrings) {
+                Log.i(TAG, "Got a route: " + route);
+                String[] routeString = route.split(";");
+                if (routeString.length == 5) {
+                    String name = routeString[0];
+                    String abbreviation = routeString[1];
+                    String id = routeString[2];
+                    String number = routeString[3];
+                    String color = routeString[4];
+                    routes.put(new Integer(number), new Route(name, abbreviation, id, number, color));
+                }
+            }
+        } catch (InterruptedException e) {
+            Log.e(TAG, "XmlTask execution from populateroutes was interupted: " + e);
+        } catch (ExecutionException e) {
+            Log.e(TAG, "XmlTask execution from populateroutes failed: " + e);
+        }
+        Log.i(TAG, "Found " + routes.size() + " routes");
+
         //TODO parse call
         //TODO remove duplicate legs
 
