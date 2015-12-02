@@ -17,6 +17,7 @@ import java.util.concurrent.ExecutionException;
 public class BartService extends Service {
     private final String TAG = "BartService";
     private HashMap<Integer, Route> routes;
+    private ArrayList<Station> stations;
     private final IBinder mBinder = new LocalBinder();
 
     /**
@@ -27,9 +28,9 @@ public class BartService extends Service {
      * @return an ArrayList of Station objects corresponding to all valid
      *         stations
      */
-    public ArrayList<Station> BartService() {
+    public BartService() {
         this.routes = populateRoutes();
-        return populateStations();
+        this.stations = populateStations();
     }
 
     /**
@@ -84,6 +85,20 @@ public class BartService extends Service {
         }
         Log.i(TAG, "Found " + stations.size() + " stations.  Returning.");
         return stations;
+    }
+
+    /**
+     * Lookup a Station by its abbreviation
+     * @param abbreviation is the abbrevation of the station in question
+     * @return the Station object corresponding to the given abbreviation
+     */
+    public Station lookupStationByAbbreviation(String abbreviation) {
+        for (Station station : this.stations) {
+            if (station.getAbbreviation().equals(abbreviation)) {
+                return station;
+            }
+        }
+        return null;
     }
 
     private HashMap<Integer, Route> populateRoutes() {
@@ -171,7 +186,7 @@ public class BartService extends Service {
         ArrayList<Legs> legs = new ArrayList<>();
 
         try {
-            String result = new DepartXmlTask().execute(call).get();
+            String result = new LegsXmlTask().execute(call).get();
             Log.i(TAG, "Result of API call is: " + result + "<");
             String[] routeStrings = result.split("\n");
             for (String route : routeStrings) {
@@ -207,29 +222,6 @@ public class BartService extends Service {
         //TODO parse call
 
 
-    }
-
-    private ArrayList<Integer> getCrowding(Legs l) {//Station station, String route, String id) {
-        ArrayList<Leg> legs = l.getLegs();
-        ArrayList<String> callArgs = new ArrayList<>();
-        String idString = "";
-        for(int i = 0; i < legs.size(); i++) {
-            assert legs.get(i).route.Id.length() == 2;
-            //TODO assert that the train ID is proper length too
-
-            String station = legs.get(i).startStation.getAbbreviation();
-            String route = legs.get(i).route.Id;
-            String id = "";
-            idString += "Id" + i+1 + "=" + station + route + id + "&";
-        }
-        /* Remove trailing & from string */
-        if (idString.endsWith("&")) {
-            idString = idString.substring(0, idString.length()-1);
-        }
-        callArgs.add(idString);
-        String call = generateApiCall("sched", "load", callArgs);
-        //TODO parse call
-        return null;
     }
 
     public ArrayList<Advisory> getCurrentAdvisories() {

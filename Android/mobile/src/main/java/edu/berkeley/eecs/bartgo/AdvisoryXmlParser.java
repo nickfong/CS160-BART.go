@@ -36,7 +36,6 @@ public class AdvisoryXmlParser {
         parser.require(XmlPullParser.START_TAG, ns, "root");
         while (parser.next() != XmlPullParser.END_TAG) {
             if (parser.getEventType() != XmlPullParser.START_TAG) {
-                parser.next();
                 continue;
             }
             String name = parser.getName();
@@ -69,16 +68,18 @@ public class AdvisoryXmlParser {
     private Advisory readEntry(XmlPullParser parser) throws XmlPullParserException, IOException {
         Log.i(TAG, "At top of readEntry");
         parser.require(XmlPullParser.START_TAG, ns, "bsa");
-        String id = null;
+        String id = parser.getAttributeValue(null, "id");
         String type = null;
         String description = null;
         while (parser.next() != XmlPullParser.END_TAG) {
+            if (parser.getEventType() != XmlPullParser.START_TAG) {
+                continue;
+            }
             String name = parser.getName();
-            if (name.equals("bsa")) {
-                skip(parser);//TODO FIXME
-//                id = readId(parser);
+            if (name.equals("station")) {
+                skip(parser);
             } else if (name.equals("type")) {
-                type= readType(parser);
+                type = readType(parser);
             } else if (name.equals("description")) {
                 description = readDescription(parser);
             } else {
@@ -87,16 +88,6 @@ public class AdvisoryXmlParser {
             }
         }
         return new Advisory(id, type, description);
-    }
-
-    private String readId(XmlPullParser parser) throws IOException, XmlPullParserException {
-        parser.require(XmlPullParser.START_TAG, ns, "bsa");
-        String id = "";
-        String tag = parser.getName();
-        if (tag.equals("id")) {
-            id = parser.getAttributeValue(null, "id");
-        }
-        return id;
     }
 
     private String readType(XmlPullParser parser) throws IOException, XmlPullParserException {

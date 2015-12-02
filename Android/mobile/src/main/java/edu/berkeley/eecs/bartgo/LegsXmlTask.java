@@ -11,7 +11,7 @@ import java.net.URL;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
 
-class DepartXmlTask extends AsyncTask<String, Void, String> {
+class LegsXmlTask extends AsyncTask<String, Void, String> {
     private final String TAG = "DepartXmlTask";
 
     @Override
@@ -35,7 +35,7 @@ class DepartXmlTask extends AsyncTask<String, Void, String> {
     private String loadXmlFromNetwork(String urlString) throws XmlPullParserException, IOException {
         InputStream stream = null;
         // Instantiate the parser
-        departXmlParser departParser = new departXmlParser();
+        LegsXmlParser departParser = new LegsXmlParser();
         ArrayList<Legs> legs = null;
 
         try {
@@ -48,8 +48,8 @@ class DepartXmlTask extends AsyncTask<String, Void, String> {
         }
 
         String depart_string = "";
-        for (Leg leg : legs) {
-            depart_string += leg.startStation+ ";" + leg.endStation+ ";" + leg.trainDestination + "\n";
+        for (Legs l : legs) {
+            depart_string += "Foo";//leg.startStation+ ";" + leg.endStation+ ";" + leg.trainDestination + "\n";
         }
         return depart_string;
     }

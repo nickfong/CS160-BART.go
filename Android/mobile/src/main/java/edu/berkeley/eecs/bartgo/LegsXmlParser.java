@@ -74,7 +74,7 @@ public class LegsXmlParser {
         return legs;
     }
 
-    private legs readEntry(XmlPullParser parser) throws XmlPullParserException, IOException {
+    private Legs readEntry(XmlPullParser parser) throws XmlPullParserException, IOException {
         Log.i(TAG, "At top of readEntry");
         parser.require(XmlPullParser.START_TAG, ns, "trip");
         String legsName = null;
@@ -98,7 +98,7 @@ public class LegsXmlParser {
                 skip(parser);
             }
         }
-        return new legs(legsName, abbreviation, Id, number, color);
+        return null;//new legs(legsName, abbreviation, Id, number, color);
     }
 
     private String readName(XmlPullParser parser) throws IOException, XmlPullParserException {
