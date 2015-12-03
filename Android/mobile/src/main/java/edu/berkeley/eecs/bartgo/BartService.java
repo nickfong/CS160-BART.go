@@ -299,7 +299,9 @@ public class BartService extends Service {
                     String id = advisoryString[0];
                     String type = advisoryString[1];
                     String description= advisoryString[2];
-                    advisories.add(new Advisory(id, type, description));
+                    if (!id.equals("null")) {
+                        advisories.add(new Advisory(id, type, description));
+                    }
                 }
             }
         } catch (InterruptedException e) {
