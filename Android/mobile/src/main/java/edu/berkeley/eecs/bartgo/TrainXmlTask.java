@@ -11,28 +11,10 @@ import java.net.URL;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
 
-class TrainXmlTask extends AsyncTask<String, Void, String> {
+class TrainXmlTask extends BartXmlTask {
     private final String TAG = "TrainXmlTask";
 
-    @Override
-    protected String doInBackground(String... urls) {
-        try {
-            return loadXmlFromNetwork(urls[0]);
-        } catch (IOException e) {
-            Log.e(TAG, String.valueOf(e));
-            return "Connection error"; //getResources().getString(R.string.connection_error);
-        } catch (XmlPullParserException e) {
-            Log.e(TAG, String.valueOf(e));
-            return "XML Error:" + e; //getResources().getString(R.string.xml_error);
-        }
-    }
-
-    @Override
-    protected void onPostExecute(String result) {
-        super.onPostExecute(result);
-    }
-
-    private String loadXmlFromNetwork(String urlString) throws XmlPullParserException, IOException {
+    String loadXmlFromNetwork(String urlString) throws XmlPullParserException, IOException {
         InputStream stream = null;
         // Instantiate the parser
         TrainXmlParser trainParser = new TrainXmlParser();
@@ -52,19 +34,5 @@ class TrainXmlTask extends AsyncTask<String, Void, String> {
             estimate += s + ";";
         }
         return estimate.substring(0, estimate.length() - 1);
-    }
-
-    // Given a string representation of a URL, sets up a connection and gets
-    // an input stream.
-    private InputStream downloadUrl(String urlString) throws IOException {
-        URL url = new URL(urlString);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setReadTimeout(10000 /* milliseconds */);
-        conn.setConnectTimeout(15000 /* milliseconds */);
-        conn.setRequestMethod("GET");
-        conn.setDoInput(true);
-        // Starts the query
-        conn.connect();
-        return conn.getInputStream();
     }
 }
