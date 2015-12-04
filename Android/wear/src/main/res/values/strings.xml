@@ -1,4 +1,20 @@
 <resources>
     <string name="app_name">BART.GO</string>
     <string name="hello_world">Hello World!</string>
+    <string name="nav_activity">display_navigation</string>
+    <string name="nav_default">No Navigation Information</string>
+    <string name="OK">OK</string>
+
+    <color name="sunset_orange">#F95957</color>
+    <color name="mustard">#FBD250</color>
+    <color name="light_mustard">#F7EBC3</color>
+    <color name="dull_green">#3ECAB6</color>
+    <color name="nav_blue">#64B5F6</color>
+    <color name="regal_blue">#1D4057</color>
+    <color name="mountain_mist">#939598</color>
+    <color name="athans_grey_75">#BFE0E0E0</color>
+    <color name="athans_grey">#E0E0E0</color>
+    <color name="white">#FFFFFF</color>
+    <color name="white_50">#80FFFFFF</color>
+    <color name="seashell">#F1F1F1</color>
 </resources>

@@ -3,12 +3,12 @@
     package="edu.berkeley.eecs.bartgo" >
 
     <uses-feature android:name="android.hardware.type.watch" />
-
+    <uses-permission android:name="android.permission.VIBRATE"/>
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/bart_go_launcher"
         android:label="@string/app_name"
         android:theme="@android:style/Theme.DeviceDefault" >
         <uses-library
@@ -25,6 +25,32 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".DisplayActivity"
+            android:label="@string/app_name"
+            android:theme="@android:style/Theme.DeviceDefault.Light" >
+        </activity>
+        <activity
+            android:name=".NavigationActivity"
+            android:label="@string/nav_activity"
+            android:parentActivityName=".DisplayActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".DisplayActivity" />
+        </activity>
+        <service
+            android:name=".WatchListenerService"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="com.google.android.gms.wearable.BIND_LISTENER" />
+            </intent-filter>
+        </service>
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyDBi8DUOIlJUouoNL8sgrIluGb30gBr6K8"/>
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
     </application>
 
 </manifest>
