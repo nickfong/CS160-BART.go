@@ -231,7 +231,12 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
         }
     };
 
-    /* Returns a HashMap between station names and
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // MAP PREPARATION
+    ////////////////////////////////////////////////////////////////////////////////
+    /**
+     * Returns a HashMap between station names and
      * latitude-longitude coordinates.
      *
      * TODO--INTEGRATION:  CHANGE TO ACCEPT INPUT FROM NICK'S API DATA
