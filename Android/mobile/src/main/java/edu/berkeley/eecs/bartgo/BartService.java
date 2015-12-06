@@ -66,12 +66,14 @@ public class BartService extends Service {
             for (String station : stationStrings) {
                 Log.i(TAG, "Got a station: " + station);
                 String[] stationString = station.split(";");
-                if (stationString.length == 4) {
+                if (stationString.length == 6) {
                     String abbreviation = stationString[0];
                     String name = stationString[1];
                     String address = stationString[2];
                     String zip = stationString[3];
-                    stations.add(new Station(abbreviation, name, address, zip));
+                    String latitude = stationString[4];
+                    String longitude = stationString[5];
+                    stations.add(new Station(abbreviation, name, address, zip, latitude, longitude));
                 }
             }
         } catch (InterruptedException e) {
@@ -105,6 +107,20 @@ public class BartService extends Service {
     public Station lookupStationByAbbreviation(String abbreviation) {
         for (Station station : this.stations) {
             if (station.getAbbreviation().equals(abbreviation)) {
+                return station;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Lookup a Station by its name
+     * @param name is the full name of the station in question
+     * @return the Station object corresponding to the given name
+     */
+    public Station lookupStationByName(String name) {
+        for (Station station : this.stations) {
+            if (station.getName().equals(name)) {
                 return station;
             }
         }
@@ -241,7 +257,9 @@ public class BartService extends Service {
         HashMap<String, ArrayList<Integer>> departureTimes = new HashMap();
         try {
             String result = new TrainXmlTask().execute(call).get();
-
+            if (result.length() == 0) {
+                return;
+            }
             String[] etdArray = result.split(";");
             for (String etd : etdArray) {
                 String[] estimateArray = etd.split(":");
@@ -251,8 +269,7 @@ public class BartService extends Service {
                 for (String estimate : estimatesArray) {
                     if (estimate.equals("Leaving")) {
                         estimates.add(new Integer(0));
-                    }
-                    else {
+                    } else {
                         estimates.add(Integer.valueOf(estimate));
                     }
                 }

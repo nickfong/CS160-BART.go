@@ -108,6 +108,9 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
         // Station Latitude-Longitude data structure
         stationLatLngMap = getStationLatLngMap();
 
+        // Bart service initialization
+        mBService = new BartService();
+
         // Generate mapFragment for Map tab
         MapFragment mapFragment = (MapFragment) getFragmentManager()
                 .findFragmentById(R.id.mapFrag);
@@ -217,7 +220,18 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
     protected void onStart() {
         super.onStart();
         Intent intent = new Intent(this, BartService.class);
+        ComponentName mService = startService(intent);
+        startService(intent);
         bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Intent intent = new Intent(this, BartService.class);
+        stopService(intent);
+        unbindService(mConnection);
+//        ComponentName mService = startService(intent);
     }
     /** Defines callbacks for service binding, passed to bindService() */
     private ServiceConnection mConnection = new ServiceConnection() {
