@@ -16,7 +16,7 @@ public class NavigationActivity extends Activity {
         TextView direction = (TextView) findViewById(R.id.navigationText);
         direction.setText(getIntent().getStringExtra(DisplayActivity.NAV_EXTRA));
         direction.setOnTouchListener(new OnSwipeTouchListener(this) {
-            public void onSwipeLeft() {
+            public void onSwipeRight() {
                 finish();
             }
         });
