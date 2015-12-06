@@ -12,6 +12,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -56,6 +57,7 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
     boolean mBound = false;
 
     static String currList = "Favorites";
+    static final String TAG_DEBUG = "tag_debug";
 
     ArrayList<String> allStationsList;
     ArrayList<String> favoritesList;
@@ -65,6 +67,8 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
     HashMap<Integer, String> allStationsHash = new HashMap<Integer, String>();
     HashMap<Integer, String> favoritesHash = new HashMap<Integer, String>();
     HashMap<String, LatLng> stationLatLngMap;
+
+    ArrayList<Station> stationList;
 
 
 
@@ -100,16 +104,17 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
         allStationsButton.setTextColor(Color.parseColor(grey));
         mapButton.setTextColor(Color.parseColor(grey));
 
-        // UI data structures
-        createAllStationsHash();
-        createFavoritesHash();
-        listView.setAdapter(setFavoriteStations());
+        // Bart service initialization
+        mBService = new BartService();
+        stationList = mBService.getStations();
 
         // Station Latitude-Longitude data structure
         stationLatLngMap = getStationLatLngMap();
 
-        // Bart service initialization
-        mBService = new BartService();
+        // UI data structures
+        createAllStationsHash();
+        createFavoritesHash();
+        listView.setAdapter(setFavoriteStations());
 
         // Generate mapFragment for Map tab
         MapFragment mapFragment = (MapFragment) getFragmentManager()
@@ -135,6 +140,13 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
                 // Dummy origin data
                 Double origLat = 37.875173;
                 Double origLng = -122.260172;
+
+//                // Prepare extras from data (ie. the selected station)
+//                Double destLat = Double.parseDouble(mBService.lookupStationByName(dest).getLatitude());
+//                Double destLng = Double.parseDouble(mBService.lookupStationByName(dest).getLongitude());
+//                // Dummy origin data
+//                Double origLat = 37.875173;
+//                Double origLng = -122.260172;
 
                 // Create post-selection intent and put extras
                 Intent postSelection = new Intent();
@@ -265,6 +277,16 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
     public HashMap<String, LatLng> getStationLatLngMap() {
         HashMap<String,LatLng> stationMap = new HashMap<>();
 
+        for (Station s : mBService.getStations()) {
+            Double sLat = Double.parseDouble(s.getLatitude());
+            Double sLng = Double.parseDouble(s.getLongitude());
+//            Log.d(TAG_DEBUG, "***** meeeeeep!");
+            stationMap.put(s.getName(), new LatLng(sLat, sLng));
+        }
+//        Log.d(TAG_DEBUG, "*****" + stationMap.get("12th St. Oakland City Center"));
+//        Log.d(TAG_DEBUG, "*****" + stationMap.get("West Oakland"));
+
+        /* TODO--DELETE
         // Hardcoded station data
         LatLng oak12thSt = new LatLng(37.803664, -122.271604);
         LatLng mission16thSt = new LatLng(37.765062, -122.419694);
@@ -356,7 +378,7 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
         stationMap.put("Union City", unionCity);
         stationMap.put("Walnut Creek", walCreek);
         stationMap.put("West Dublin/Pleasanton", wDublinPleas);
-        stationMap.put("West Oakland", wOak);
+        stationMap.put("West Oakland", wOak); */
 
         return stationMap;
     }
@@ -397,6 +419,7 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
      */
     @Override
     public void onMapReady(GoogleMap map) {
+//        Log.d(TAG_DEBUG, "***** MEEEP! MAP IS READY");
         // Set camera zoom
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(
                 new LatLng(37.804697, -122.201255), (float) 9.5));
@@ -411,6 +434,8 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
             LatLng val = entry.getValue();
             String stationName = entry.getKey();
 
+            // Log.d(TAG_DEBUG, "*****" + val);
+
             map.addMarker(new MarkerOptions()
                     .icon(BitmapDescriptorFactory.fromBitmap(generateIcon(R.drawable.marker_bartgo_logo_round, 2)))
                     .anchor(0.5f, 1.0f) /*Anchors the marker on the bottom center */
@@ -418,6 +443,7 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
                     .title(stationName + " BART")
                     .snippet("ETA:  50 min | $6.50 | $13.00")
                     .draggable(true));
+            Log.d(TAG_DEBUG, "***** Marker added at " + val);
             map.setOnMarkerDragListener(new GoogleMap.OnMarkerDragListener() {
                 // Simulate long-click functionality
                 @Override
@@ -568,6 +594,14 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
      * TODO--INTEGRATION:  CHANGE TO ACCEPT INPUT FROM NICK'S API DATA
      */
     public void createAllStationsHash() {
+        int len = stationLatLngMap.size();
+        allStationsList = new ArrayList<>(len);
+
+        for (Station s : mBService.getStations()) {
+            allStationsList.add(s.getName());
+        }
+
+        /* TODO--DELETE
         // Hard-coded station data
         allStationsList =  new ArrayList<>(45);
         allStationsList.add("12th St. Oakland City Center");
@@ -614,7 +648,7 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
         allStationsList.add("Union City");
         allStationsList.add("Walnut Creek");
         allStationsList.add("West Dublin/Pleasanton");
-        allStationsList.add("West Oakland");
+        allStationsList.add("West Oakland"); */
         Collections.sort(allStationsList);
         int count = 0;
         for (String station:allStationsList) {
