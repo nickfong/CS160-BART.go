@@ -114,20 +114,6 @@ public class BartService extends Service {
     }
 
     /**
-     * Lookup a Station by its name
-     * @param name is the full name of the station in question
-     * @return the Station object corresponding to the given name
-     */
-    public Station lookupStationByName(String name) {
-        for (Station station : this.stations) {
-            if (station.getName().equals(name)) {
-                return station;
-            }
-        }
-        return null;
-    }
-
-    /**
      * Populates the internal ArrayList of Routes
      * @return an ArrayList of valid BART Routes
      */

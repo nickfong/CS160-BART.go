@@ -436,14 +436,15 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
 
             // Log.d(TAG_DEBUG, "*****" + val);
 
-            map.addMarker(new MarkerOptions()
+            Marker mMarker = map.addMarker(new MarkerOptions()
                     .icon(BitmapDescriptorFactory.fromBitmap(generateIcon(R.drawable.marker_bartgo_logo_round, 2)))
                     .anchor(0.5f, 1.0f) /*Anchors the marker on the bottom center */
                     .position(val)
                     .title(stationName + " BART")
                     .snippet("ETA:  50 min | $6.50 | $13.00")
                     .draggable(true));
-            Log.d(TAG_DEBUG, "***** Marker added at " + val);
+//            Log.d(TAG_DEBUG, "***** Marker added at " + val);
+            Log.d(TAG_DEBUG, "***** Marker added: " + mMarker);
             map.setOnMarkerDragListener(new GoogleMap.OnMarkerDragListener() {
                 // Simulate long-click functionality
                 @Override
