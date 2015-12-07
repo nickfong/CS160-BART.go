@@ -77,7 +77,12 @@ public class DisplayActivity extends WearableActivity {
                      * that should be handled on the mobile side) */
                     public void onSwipeLeft() {
                         Intent intent = new Intent(mContext, NavigationActivity.class);
-                        intent.putExtra(NAV_EXTRA, "Go straight, and turn left at Fulton/Bancroft");
+                        //fake data
+                        String[] directions = new String[3];
+                        directions[0] = "Go straight";
+                        directions[1] = "Turn left";
+                        directions[2] = "stop";
+                        intent.putExtra(NAV_EXTRA, directions);
                         startActivity(intent);
                     }
                 });
