@@ -58,12 +58,12 @@ public class DisplayActivity extends WearableActivity {
                 mPacingView.setOnTouchListener(new OnSwipeTouchListener(mContext) {
                     public void onSwipeBottom() {
                         Toast.makeText(DisplayActivity.this, "Previous Train", Toast.LENGTH_SHORT).show();
-                        mPacingView.onSwipeDown();
+                        mPacingView.onSwipeUp();
                     }
 
                     public void onSwipeTop() {
                         Toast.makeText(DisplayActivity.this, "Next Train", Toast.LENGTH_SHORT).show();
-                        mPacingView.onSwipeUp();
+                        mPacingView.onSwipeDown();
                     }
 
                     public void onSwipeRight() {
@@ -112,7 +112,6 @@ public class DisplayActivity extends WearableActivity {
         super.onPause();
         //unregister our receiver
         this.unregisterReceiver(this.mReceiver);
-        finish();
     }
 
     @Override
