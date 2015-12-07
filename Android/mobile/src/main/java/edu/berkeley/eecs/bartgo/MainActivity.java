@@ -47,6 +47,11 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
     ////////////////////////////////////////////////////////////////////////////////
     // GLOBAL VARS
     ////////////////////////////////////////////////////////////////////////////////
+    //  Context c = getBaseContext();
+    static final String orange = "#FB9D50";
+    static final String blue = "#335E7F";
+    static final String grey = "#BCD0D1";
+
     BartService mBService;
     boolean mBound = false;
 
@@ -90,10 +95,10 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
         final TextView underlineAll = (TextView) findViewById(R.id.underlineAll);
         final TextView underlineMap = (TextView) findViewById(R.id.underlineMap);
 
-        underlineAll.setBackgroundColor(Color.parseColor("#2C3E50"));
-        underlineMap.setBackgroundColor(Color.parseColor("#2C3E50"));
-        allStationsButton.setTextColor(Color.parseColor("#95A5A6"));
-        mapButton.setTextColor(Color.parseColor("#95A5A6"));
+        underlineAll.setBackgroundColor(Color.parseColor(blue));
+        underlineMap.setBackgroundColor(Color.parseColor(blue));
+        allStationsButton.setTextColor(Color.parseColor(grey));
+        mapButton.setTextColor(Color.parseColor(grey));
 
         // UI data structures
         createAllStationsHash();
@@ -146,12 +151,12 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
                 currList = "All";
                 listView.setAdapter(setAllStations());
                 mapFrame.setVisibility(View.INVISIBLE);
-                underlineAll.setBackgroundColor(Color.parseColor("#F39C12"));
-                underlineMap.setBackgroundColor(Color.parseColor("#2C3E50"));
-                underlineFavorites.setBackgroundColor(Color.parseColor("#2C3E50"));
-                allStationsButton.setTextColor(Color.parseColor("#F39C12"));
-                favoritesButton.setTextColor(Color.parseColor("#95A5A6"));
-                mapButton.setTextColor(Color.parseColor("#95A5A6"));
+                underlineAll.setBackgroundColor(Color.parseColor(orange)); // orange
+                underlineMap.setBackgroundColor(Color.parseColor(blue));  // blue
+                underlineFavorites.setBackgroundColor(Color.parseColor(blue)); // blue
+                allStationsButton.setTextColor(Color.parseColor(orange));  // orange
+                favoritesButton.setTextColor(Color.parseColor(grey));
+                mapButton.setTextColor(Color.parseColor(grey));
             }
         });
 
@@ -161,12 +166,12 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
                 currList = "Favorites";
                 listView.setAdapter(setFavoriteStations());
                 mapFrame.setVisibility(View.INVISIBLE);
-                underlineFavorites.setBackgroundColor(Color.parseColor("#F39C12"));
-                underlineAll.setBackgroundColor(Color.parseColor("#2C3E50"));
-                underlineMap.setBackgroundColor(Color.parseColor("#2C3E50"));
-                favoritesButton.setTextColor(Color.parseColor("#F39C12"));
-                allStationsButton.setTextColor(Color.parseColor("#95A5A6"));
-                mapButton.setTextColor(Color.parseColor("#95A5A6"));
+                underlineFavorites.setBackgroundColor(Color.parseColor(orange));
+                        underlineAll.setBackgroundColor(Color.parseColor(blue));
+                underlineMap.setBackgroundColor(Color.parseColor(blue));
+                favoritesButton.setTextColor(Color.parseColor(orange));
+                allStationsButton.setTextColor(Color.parseColor(grey));
+                mapButton.setTextColor(Color.parseColor(grey));
             }
         });
 
@@ -175,12 +180,12 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
             public void onClick(View v) {
                 listView.setAdapter(clearStations());
                 mapFrame.setVisibility(View.VISIBLE);
-                underlineMap.setBackgroundColor(Color.parseColor("#F39C12"));
-                underlineAll.setBackgroundColor(Color.parseColor("#2C3E50"));
-                underlineFavorites.setBackgroundColor(Color.parseColor("#2C3E50"));
-                mapButton.setTextColor(Color.parseColor("#F39C12"));
-                favoritesButton.setTextColor(Color.parseColor("#95A5A6"));
-                allStationsButton.setTextColor(Color.parseColor("#95A5A6"));
+                underlineMap.setBackgroundColor(Color.parseColor(orange));
+                underlineAll.setBackgroundColor(Color.parseColor(blue));
+                underlineFavorites.setBackgroundColor(Color.parseColor(blue));
+                mapButton.setTextColor(Color.parseColor(orange));
+                favoritesButton.setTextColor(Color.parseColor(grey));
+                allStationsButton.setTextColor(Color.parseColor(grey));
             }
         });
 

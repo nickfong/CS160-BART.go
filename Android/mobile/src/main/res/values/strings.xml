@@ -16,4 +16,26 @@
     <string name="title_activity_nav">NavActivity</string>
     <string name="title_activity_post_selection">postSelection</string>
     <string name="title_activity_no_nav">NoNavActivity</string>
+
+
+
+  <!--
+    Light theme -->
+    <color name="blue_curr">#335E7F</color>
+    <color name="orange_curr">#FB9D50</color>
+    <color name="grey_curr">#BCD0D1</color>
+  <!--
+  Dark theme
+    <color name="blue_curr">#335E7F</color>
+    <color name="orange_curr">#FB9D50</color>
+    <color name="grey_curr">#BCD0D1</color>
+
+    <color name="red_curr">#277F72</color>
+    <color name="yellow_curr">#C7A63F</color>
+    <color name="green_curr">#277F72</color>
+
+
+  -->
+
+
 </resources>

@@ -6,10 +6,13 @@
     <string name="OK">OK</string>
     <string name="long_press_intro">Long Press To Exit The App</string>
 
-    <color name="sunset_orange">#F95957</color>
-    <color name="mustard">#FBD250</color>
+    <color name="sunset_orange_old">#F95957</color>
+    <color name="sunset_orange">#D94C4A</color>
+    <color name="mustard_old">#FBD250</color>
+    <color name="mustard">#D4B143</color>
     <color name="light_mustard">#F7EBC3</color>
-    <color name="dull_green">#3ECAB6</color>
+    <color name="dull_green_old">#3ECAB6</color>
+    <color name="dull_green">#38B8A5</color>
     <color name="nav_blue">#64B5F6</color>
     <color name="regal_blue">#1D4057</color>
     <color name="mountain_mist">#939598</color>

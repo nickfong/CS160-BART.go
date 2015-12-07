@@ -2,7 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#2C3E50"
+    android:background="@color/blue_curr"
     android:paddingBottom="@dimen/activity_vertical_margin"
     tools:context=".postSelection">
 
@@ -36,7 +36,7 @@
         android:layout_below="@+id/selectedDestination"
         android:paddingTop="15dp"
         android:paddingLeft="20dp"
-        android:textColor="#F39C12" />
+        android:textColor="@color/orange_curr" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -75,7 +75,7 @@
         android:layout_width="320dp"
         android:layout_height="1dp"
         android:id="@+id/divider"
-        android:background="#95A5A6"
+        android:background="@color/grey_curr"
         android:layout_below="@+id/costOfFare2"
         android:layout_marginTop="20dp"
         android:layout_centerHorizontal="true" />
@@ -142,7 +142,7 @@
         android:layout_height="60dp"
         android:text="START!"
         android:id="@+id/startButton"
-        android:background="#F39C12"
+        android:background="@color/orange_curr"
         android:textColor="#ffffff"
         android:textSize="17dp"
         android:layout_alignParentBottom="true"
