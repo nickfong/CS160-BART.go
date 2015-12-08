@@ -16,11 +16,30 @@ public class PacingView extends View{
     private long[] mBARTDepartureTimes;
     private int mCriticalDepartureIndex;
     private RectF mGaugeBound = new RectF();
-    private Paint mPaint = new Paint();
+    private final Paint mGaugePaint = new Paint();
+    private final Paint mBARTBarPaint = new Paint();
+    private final Paint mPrimaryWhitePaint = new Paint();
+    private final Paint mSecondaryWhitePaint = new Paint();
 
     public PacingView(Context context, AttributeSet attrs) {
         super(context, attrs);
         Log.v("PacingView", "constructor called");
+
+        mGaugePaint.setAntiAlias(true);
+        mGaugePaint.setColor(getResources().getColor(R.color.white_50));
+        mGaugePaint.setStyle(Paint.Style.STROKE);
+
+        mBARTBarPaint.setAntiAlias(true);
+        mBARTBarPaint.setColor(getResources().getColor(R.color.white_50));
+
+        mPrimaryWhitePaint.setAntiAlias(true);
+        mPrimaryWhitePaint.setColor(getResources().getColor(R.color.white));
+        mBARTBarPaint.setStyle(Paint.Style.FILL);
+        mPrimaryWhitePaint.setTextAlign(Paint.Align.CENTER);
+
+        mSecondaryWhitePaint.setAntiAlias(true);
+        mSecondaryWhitePaint.setColor(getResources().getColor(R.color.white));
+        mSecondaryWhitePaint.setTextAlign(Paint.Align.CENTER);
     }
 
     @Override
@@ -31,6 +50,14 @@ public class PacingView extends View{
         int minH = getSuggestedMinimumHeight() + getPaddingBottom() + getPaddingTop();
         int h = Math.max(MeasureSpec.getSize(heightMeasureSpec), minH);
         int size = Math.min(w, h);
+        float u = size / 10;
+
+        mGaugePaint.setStrokeWidth(u / 7);
+        mBARTBarPaint.setStrokeWidth(u / 4);
+        mPrimaryWhitePaint.setStrokeWidth(u / 4);
+        mPrimaryWhitePaint.setTextSize((float) (2.9 * u));
+        mSecondaryWhitePaint.setTextSize((float) (0.8 * u));
+
         setMeasuredDimension(size, size);
         mGaugeBound.set(size / 10, size / 10, (float) (size * 0.9), (float) (size * 0.9));
     }
@@ -41,8 +68,8 @@ public class PacingView extends View{
         super.onDraw(canvas);
 
         /* draw background color*/
-        double offset = (mDepartureTimeInMillis - mArrivalTimeInMillis) / 60000;
-        if (offset > 3) {
+        double offset = mDepartureTimeInMillis - mArrivalTimeInMillis;
+        if (offset > 180000) {
             canvas.drawColor(getResources().getColor(R.color.dull_green));
         } else if (offset > 0) {
             canvas.drawColor(getResources().getColor(R.color.mustard));
@@ -52,15 +79,9 @@ public class PacingView extends View{
         float u = getWidth() / 10;
 
         /* draw gauge arc */
-        mPaint.setAntiAlias(true);
-        mPaint.setColor(getResources().getColor(R.color.white_50));
-        mPaint.setStyle(Paint.Style.STROKE);
-        mPaint.setStrokeWidth(u / 7);
-        canvas.drawArc(mGaugeBound, 180, 180, false, mPaint);
+        canvas.drawArc(mGaugeBound, 180, 180, false, mGaugePaint);
 
         /* draw BART bar on the gauge */
-        mPaint.setStyle(Paint.Style.FILL);
-        mPaint.setStrokeWidth(u / 4);
         for (int i = 0; i < mBARTDepartureTimes.length; i++) {
             if (i == mCriticalDepartureIndex) continue;
             double diff = (mDepartureTimeInMillis - mBARTDepartureTimes[i]) / 60000;
@@ -72,17 +93,13 @@ public class PacingView extends View{
             float startY = (float) ((5 - 4 * cos) * u);
             float endX = (float) ((5 - 3 * sin) * u);
             float endY = (float) ((5 - 3 * cos) * u);
-            canvas.drawLine(startX, startY, endX, endY, mPaint);
+            canvas.drawLine(startX, startY, endX, endY, mBARTBarPaint);
         }
-        mPaint.setColor(getResources().getColor(R.color.white));
-        canvas.drawLine(5 * u, u / 2, 5 * u, 2 * u, mPaint);
+        canvas.drawLine(5 * u, u / 2, 5 * u, 2 * u, mPrimaryWhitePaint);
 
         /* draw next departure time */
-        mPaint.setTextSize((float)(2.9 * u));
-        mPaint.setTextAlign(Paint.Align.CENTER);
-        canvas.drawText(mMinutesTillDeparture, (float) (6.8 * u), (float) (7.4 * u), mPaint);
-        mPaint.setTextSize((float)(0.8 * u));
-        canvas.drawText("BART", (float) (6.8 * u), (float) (8.2 * u), mPaint);
+        canvas.drawText(mMinutesTillDeparture, (float) (6.8 * u), (float) (7.4 * u), mPrimaryWhitePaint);
+        canvas.drawText("BART", (float) (6.8 * u), (float) (8.2 * u), mSecondaryWhitePaint);
 
         /* draw estimated arrival dot on the gauge */
         double alpha = offset * PI / 20;
@@ -95,13 +112,11 @@ public class PacingView extends View{
             x = 9 * u;
             y = 5 * u;
         }
-        canvas.drawCircle(x, y, u / 2, mPaint);
+        canvas.drawCircle(x, y, u / 2, mPrimaryWhitePaint);
 
         /* draw estimated arrival time */
-        mPaint.setTextSize((float) (2.9 * u));
-        canvas.drawText(mMinutesTillArrival, (float) (3.1 * u), (float) (7.4 * u), mPaint);
-        mPaint.setTextSize((float) (0.8 * u));
-        canvas.drawText("YOU", (float) (3.2 * u), (float) (8.2 * u), mPaint);
+        canvas.drawText(mMinutesTillArrival, (float) (3.1 * u), (float) (7.4 * u), mPrimaryWhitePaint);
+        canvas.drawText("YOU", (float) (3.2 * u), (float) (8.2 * u), mSecondaryWhitePaint);
     }
 
     /* --- The methods below are useful for Patrick --- */
@@ -140,20 +155,24 @@ public class PacingView extends View{
     }
 
     /* On swipe from top to bottom -> update the UI to show the previous train */
-    public void onSwipeDown() {
+    public boolean onSwipeDown() {
         if (mCriticalDepartureIndex > 0) {
             mCriticalDepartureIndex -= 1;
             mDepartureTimeInMillis = mBARTDepartureTimes[mCriticalDepartureIndex];
+            updateArrivalTime(mArrivalTimeInMillis);
+            return true;
         }
-        updateArrivalTime(mArrivalTimeInMillis);
+        return false;
     }
 
     /* On swipe from bottom to top -> update the UI to show the next train */
-    public void onSwipeUp() {
+    public boolean onSwipeUp() {
         if (mCriticalDepartureIndex + 1 < mBARTDepartureTimes.length) {
             mCriticalDepartureIndex += 1;
             mDepartureTimeInMillis = mBARTDepartureTimes[mCriticalDepartureIndex];
+            updateArrivalTime(mArrivalTimeInMillis);
+            return true;
         }
-        updateArrivalTime(mArrivalTimeInMillis);
+        return false;
     }
 }

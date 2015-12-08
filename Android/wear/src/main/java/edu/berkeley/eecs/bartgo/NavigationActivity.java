@@ -30,7 +30,8 @@ public class NavigationActivity extends Activity {
                 if (currentDirectionIndex > 0) {
                     currentDirectionIndex -= 1;
                     direction.setText(directions[currentDirectionIndex]);
-                    Toast.makeText(NavigationActivity.this, "Previous Direction", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(NavigationActivity.this, "No Previous Direction", Toast.LENGTH_SHORT).show();
                 }
             }
 
@@ -38,7 +39,8 @@ public class NavigationActivity extends Activity {
                 if (currentDirectionIndex < directions.length - 1) {
                     currentDirectionIndex += 1;
                     direction.setText(directions[currentDirectionIndex]);
-                    Toast.makeText(NavigationActivity.this, "Next Direction", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(NavigationActivity.this, "END", Toast.LENGTH_SHORT).show();
                 }
             }
         });

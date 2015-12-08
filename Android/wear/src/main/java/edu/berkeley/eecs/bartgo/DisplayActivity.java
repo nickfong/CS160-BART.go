@@ -57,13 +57,21 @@ public class DisplayActivity extends WearableActivity {
                 mPacingView.updateArrivalTime(currMillis + 300000);
                 mPacingView.setOnTouchListener(new OnSwipeTouchListener(mContext) {
                     public void onSwipeBottom() {
-                        Toast.makeText(DisplayActivity.this, "Previous Train", Toast.LENGTH_SHORT).show();
-                        mPacingView.onSwipeUp();
+                        boolean didSucceed = mPacingView.onSwipeUp();
+                        if (didSucceed) {
+                            Toast.makeText(DisplayActivity.this, "Previous Train", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(DisplayActivity.this, "No More", Toast.LENGTH_SHORT).show();
+                        }
                     }
 
                     public void onSwipeTop() {
-                        Toast.makeText(DisplayActivity.this, "Next Train", Toast.LENGTH_SHORT).show();
-                        mPacingView.onSwipeDown();
+                        boolean didSucceed = mPacingView.onSwipeDown();
+                        if (didSucceed) {
+                            Toast.makeText(DisplayActivity.this, "Next Train", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(DisplayActivity.this, "No More", Toast.LENGTH_SHORT).show();
+                        }
                     }
 
                     public void onSwipeRight() {
