@@ -37,12 +37,19 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.text.DateFormat;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.TimeZone;
 
 public class MainActivity extends Activity implements OnMapReadyCallback {
     ////////////////////////////////////////////////////////////////////////////////
@@ -385,6 +392,21 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
         return stationMap;
     }
 
+    public String generateSnippet(String dest) {
+        Station destStation = mBService.lookupStationByName(dest);
+        Station origStation = mBService.lookupStationByAbbreviation("DBRK"); // Downtown Berkeley placeholder
+        DateFormat df = new SimpleDateFormat("hh:mma", Locale.US);
+        Date now = Calendar.getInstance(TimeZone.getDefault()).getTime();
+        Trip mTrip = mBService.generateTrip(origStation, destStation, df.format(now));
+
+        float fare = mTrip.getFare();
+        DecimalFormat decim = new DecimalFormat("0.00");
+        String fareOneWay = decim.format(fare);
+        String fareRoundTrip = decim.format(2*fare);
+
+        String mSnippet = "$" + fareOneWay + " | $" + fareRoundTrip;
+        return mSnippet;
+    }
 
 
 
@@ -443,7 +465,8 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
                     .anchor(0.5f, 1.0f) /*Anchors the marker on the bottom center */
                     .position(val)
                     .title(stationName + " BART")
-                    .snippet("ETA:  50 min | $6.50 | $13.00")
+                    /*.snippet("ETA:  50 min | $6.50 | $13.00")*/
+                    .snippet(generateSnippet(stationName))
                     .draggable(true));
 //            Log.d(TAG_DEBUG, "***** Marker added at " + val);
             Log.d(TAG_DEBUG, "***** Marker added: " + mMarker);
