@@ -28,8 +28,8 @@ public class postSelection extends Activity {
     // GLOBAL VARS
     ////////////////////////////////////////////////////////////////////////////////
     BartService mBService;
+    List<Integer> trainList;
     Trip mTrip;
-    Leg le;
     String trainString;
     static final String TAG_DEBUG = "tag_debug";
 
@@ -54,6 +54,7 @@ public class postSelection extends Activity {
         final TextView fareString = (TextView) findViewById(R.id.costOfFare);
         final TextView fareString2 = (TextView) findViewById(R.id.costOfFare2);
         final TextView lineString = (TextView) findViewById(R.id.boundTrain);
+        final TextView etaString = (TextView) findViewById(R.id.etaText);
         final TextView minutesRemaining = (TextView) findViewById(R.id.mainBox);
         final Button startButton = (Button) findViewById(R.id.startButton);
         final Switch turnByTurnSwitch = (Switch) findViewById(R.id.turnbyturnSwitch);
@@ -61,16 +62,15 @@ public class postSelection extends Activity {
 
         String destinationSelected =  intent.getStringExtra("destName");
         destinationString.setText(destinationSelected);
-        initializeTrip(destinationSelected);
+        etaString.setText("Train arrival: " + initializeTrip(destinationSelected));
         float fare = mTrip.getFare();
         DecimalFormat decim = new DecimalFormat("0.00");
         fareString.setText("One-way: $" + decim.format(fare));
         fareString2.setText("Round-trip: $" + decim.format(2*fare));
-        le = findLeg();
-        String boundTrain = mBService.lookupStationByAbbreviation(le.trainDestination).getName();
+        String boundTrain = mBService.getNextDepartureDestination(mTrip);
         lineString.setText(boundTrain + " Train");
-        if (le.trains != null) {
-            minutesRemaining.setText(le.trains.get(0) + "");
+        if (trainList != null) {
+            minutesRemaining.setText(trainList.get(0) + "");
         }
         trainString = prepareTrains();
 
@@ -101,40 +101,45 @@ public class postSelection extends Activity {
 
     }
 
-    public void initializeTrip(String dest) {
+    // Initializes the trip and returns the current time
+    public String initializeTrip(String dest) {
         mBService = new BartService();
         Station destStation = mBService.lookupStationByName(dest);
         Station origStation = mBService.lookupStationByAbbreviation("DBRK"); // Downtown Berkeley placeholder
         DateFormat df = new SimpleDateFormat("hh:mma", Locale.US);
-        Date now = Calendar.getInstance(TimeZone.getDefault()).getTime();
+        DateFormat df2 = new SimpleDateFormat("h:mm a", Locale.US);
+        Calendar cal = Calendar.getInstance(TimeZone.getDefault());
+        Date now = cal.getTime();
         mTrip = mBService.generateTrip(origStation, destStation, df.format(now));
         mBService.updateDepartureTimes(mTrip);
+        trainList = mBService.getNextDepartureTimes(mTrip);
+        cal.add(Calendar.MINUTE, trainList.get(0));
+        String nextTrainTime = df2.format(cal.getTime());
+        return nextTrainTime;
     }
 
-    public Leg findLeg() {
-        // bestTrain is the train headed towards the trip destination
-        // arriving at the origin station the soonest. For simplicity's
-        // sake, the app will only display the trains in the same list
-        // as bestTrain
-        ArrayList<Legs> legs = mTrip.getLegs();
-        int bestIndex = 0;
-        int bestTrain = 999999;
-        for (int i = 0; i < legs.size(); i++) {
-            Leg michawk = legs.get(i).getLegs().get(0);
-            if (michawk.trains != null) {
-                int firstTrain = michawk.trains.get(0);
-                if (firstTrain < bestTrain) {
-                    bestTrain = firstTrain;
-                    bestIndex = i;
-                }
-            }
-        }
-        return legs.get(bestIndex).getLegs().get(0);
-    }
+//    public Leg findLeg() {
+//        // bestTrain is the train headed towards the trip destination
+//        // arriving at the origin station the soonest. For simplicity's
+//        // sake, the app will only display the trains in the same list
+//        // as bestTrain
+//        ArrayList<Legs> legs = mTrip.getLegs();
+//        int bestIndex = 0;
+//        int bestTrain = 999999;
+//        for (int i = 0; i < legs.size(); i++) {
+//            Leg michawk = legs.get(i).getLegs().get(0);
+//            if (michawk.trains != null) {
+//                int firstTrain = michawk.trains.get(0);
+//                if (firstTrain < bestTrain) {
+//                    bestTrain = firstTrain;
+//                    bestIndex = i;
+//                }
+//            }
+//        }
+//        return legs.get(bestIndex).getLegs().get(0);
+//    }
 
     public String prepareTrains() {
-        List<Integer> trainList = le.trains;
-        if (le.trains == null) return "";
         int numTrains = trainList.size();
         Integer[] trainArray = trainList.toArray(new Integer[numTrains]);
         long currMillis = new java.util.Date().getTime();

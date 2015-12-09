@@ -42,7 +42,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="Estimated trip time:  50 min"
+        android:text="Train arrival: "
         android:id="@+id/etaText"
         android:layout_below="@+id/tripdetails"
         android:paddingTop="15dp"

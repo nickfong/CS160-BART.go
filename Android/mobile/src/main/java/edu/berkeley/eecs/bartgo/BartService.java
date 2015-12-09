@@ -300,12 +300,12 @@ public class BartService extends Service {
     }
 
     /**
-     * Return a space-delimited String of departure times for all relevant trains
+     * Return a list of departure times for all relevant trains
      * Assumes that updateDepartureTimes() has been called already
      * @param trip is the Trip in question
      * @return a space-delimited String of departure times for all relevant trains
      */
-    public String getNextDepartureTimes(Trip trip) {
+    public ArrayList<Integer> getNextDepartureTimes(Trip trip) {
         // Populate an ArrayList with all relevant train arrival times
         ArrayList<Integer> predictionTimes = new ArrayList();
         for(Legs legs : trip.getLegs()) {
@@ -317,12 +317,7 @@ public class BartService extends Service {
         // Sort the ArrayList
         Collections.sort(predictionTimes);
 
-        // Generate and return the string
-        String timeString = "";
-        for(Integer prediction : predictionTimes) {
-            timeString += prediction + " ";
-        }
-        return timeString;
+        return predictionTimes;
     }
 
     /**
