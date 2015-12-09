@@ -10,6 +10,7 @@ import android.os.IBinder;
 import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.concurrent.ExecutionException;
@@ -296,6 +297,51 @@ public class BartService extends Service {
                 Log.i(TAG, "Couldn't find departure times for " + destination + " bound train");
             }
         }
+    }
+
+    /**
+     * Return a space-delimited String of departure times for all relevant trains
+     * Assumes that updateDepartureTimes() has been called already
+     * @param trip is the Trip in question
+     * @return a space-delimited String of departure times for all relevant trains
+     */
+    public String getNextDepartureTimes(Trip trip) {
+        // Populate an ArrayList with all relevant train arrival times
+        ArrayList<Integer> predictionTimes = new ArrayList();
+        for(Legs legs : trip.getLegs()) {
+            for(Integer prediction : legs.getLegs().get(0).trains) {
+                predictionTimes.add(prediction);
+            }
+        }
+
+        // Sort the ArrayList
+        Collections.sort(predictionTimes);
+
+        // Generate and return the string
+        String timeString = "";
+        for(Integer prediction : predictionTimes) {
+            timeString += prediction + " ";
+        }
+        return timeString;
+    }
+
+    /**
+     * Return the next relevant train's destination
+     * @param trip is the Trip in question
+     * @return a string correponding to the next relevant train's destination
+     */
+    public String getNextDepartureDestination(Trip trip) {
+        String earliestTrainAbbreviation = "";
+        Integer trainETA = Integer.MAX_VALUE;
+        for(Legs legs : trip.getLegs()) {
+            Leg currLeg = legs.getLegs().get(0);
+            if (currLeg.trains.get(0) < trainETA) {
+                trainETA = currLeg.trains.get(0);
+                earliestTrainAbbreviation = currLeg.trainDestination;
+            }
+        }
+        String earliestTrain = lookupStationByAbbreviation(earliestTrainAbbreviation).getName();
+        return earliestTrain;
     }
 
     /**
