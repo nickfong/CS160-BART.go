@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.wearable.activity.WearableActivity;
+import android.support.wearable.view.DismissOverlayView;
 import android.support.wearable.view.WatchViewStub;
 import android.util.Log;
 import android.widget.Toast;
@@ -22,6 +23,7 @@ public class DisplayActivity extends WearableActivity {
             new SimpleDateFormat("HH:mm", Locale.US);
 
     private BroadcastReceiver mReceiver;
+    private DismissOverlayView mDismissOverlay;
     private PacingView mPacingView;
     private Context mContext = this;
 
@@ -34,6 +36,12 @@ public class DisplayActivity extends WearableActivity {
         stub.setOnLayoutInflatedListener(new WatchViewStub.OnLayoutInflatedListener() {
             @Override
             public void onLayoutInflated(WatchViewStub stub) {
+
+                // Obtain the DismissOverlayView element
+                mDismissOverlay = (DismissOverlayView) stub.findViewById(R.id.dismiss_overlay);
+                mDismissOverlay.setIntroText(R.string.long_press_intro);
+                mDismissOverlay.showIntroIfNecessary();
+
                 mPacingView = (PacingView) stub.findViewById(R.id.pacingView);
 
                 long currMillis = new java.util.Date().getTime();
@@ -49,13 +57,25 @@ public class DisplayActivity extends WearableActivity {
                 mPacingView.updateArrivalTime(currMillis + 300000);
                 mPacingView.setOnTouchListener(new OnSwipeTouchListener(mContext) {
                     public void onSwipeBottom() {
-                        Toast.makeText(DisplayActivity.this, "Previous Train", Toast.LENGTH_SHORT).show();
-                        mPacingView.onSwipeDown();
+                        boolean didSucceed = mPacingView.onSwipeUp();
+                        if (didSucceed) {
+                            Toast.makeText(DisplayActivity.this, "Previous Train", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(DisplayActivity.this, "No More", Toast.LENGTH_SHORT).show();
+                        }
                     }
 
                     public void onSwipeTop() {
-                        Toast.makeText(DisplayActivity.this, "Next Train", Toast.LENGTH_SHORT).show();
-                        mPacingView.onSwipeUp();
+                        boolean didSucceed = mPacingView.onSwipeDown();
+                        if (didSucceed) {
+                            Toast.makeText(DisplayActivity.this, "Next Train", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(DisplayActivity.this, "No More", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    public void onSwipeRight() {
+                        mDismissOverlay.show();
                     }
 
                     /* --- For Patrick ---
@@ -63,9 +83,14 @@ public class DisplayActivity extends WearableActivity {
                      * navigation activity.
                      * You need to supply the correct current direction though. (although I think
                      * that should be handled on the mobile side) */
-                    public void onSwipeRight() {
+                    public void onSwipeLeft() {
                         Intent intent = new Intent(mContext, NavigationActivity.class);
-                        intent.putExtra(NAV_EXTRA, "Go straight, and turn left at Fulton/Bancroft");
+                        //fake data
+                        String[] directions = new String[3];
+                        directions[0] = "Go straight";
+                        directions[1] = "Turn left";
+                        directions[2] = "stop";
+                        intent.putExtra(NAV_EXTRA, directions);
                         startActivity(intent);
                     }
                 });
@@ -100,7 +125,6 @@ public class DisplayActivity extends WearableActivity {
         super.onPause();
         //unregister our receiver
         this.unregisterReceiver(this.mReceiver);
-        finish();
     }
 
     @Override
