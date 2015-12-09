@@ -30,6 +30,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 
@@ -126,17 +127,16 @@ public class NavActivity extends Activity {
                 currLat = mLastLocation.getLatitude();
                 currLong = mLastLocation.getLongitude();
                 double distance = getDistance(currLat, currLong);
-                double pace = (prevDist - distance) / fetchInterval / 1000; // Instantaneous meters per second
-                double secondsRemaining = distance / pace;
+//                double pace = (prevDist - distance) / fetchInterval;
+//                double millisRemaining = distance / pace;
                 long arrival = new java.util.Date().getTime();
-                long instant = arrival + (long) secondsRemaining * 1000;
-                if (Math.abs(bartTimes[0] - instant) < 600000) {
-                    sendMessage(REFRESH_DATA, instant + "");
-                } else {
-                    sendMessage(REFRESH_DATA, (arrival + (long) (distance / 0.0014)) + ""); // If the instantaneous ETA wouldn't appear
-                    // on the gauge, assume 1.4 m/s pace instead
-                }
-                prevDist = distance;
+//                if (millisRemaining > 0) {
+//                    arrival += (long) millisRemaining;
+//                } else {
+                    arrival += (long) (distance / 0.0014);
+//                }
+                sendMessage(REFRESH_DATA, arrival + "");
+//                prevDist = distance;
             }
             handler.postDelayed(updater, fetchInterval);
         }
@@ -149,6 +149,7 @@ public class NavActivity extends Activity {
         bartTimes[0] = currMillis + 1200000; // Fake data, train arriving 20 minutes after current time
         bartTimes[1] = currMillis + 900000;
         bartTimes[2] = currMillis + 600000;
+        Arrays.sort(bartTimes);
         String trainTimes = "";
         for (int i = 0; i < bartTimes.length; i++) {
             trainTimes += bartTimes[i] + " ";
