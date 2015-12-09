@@ -110,7 +110,7 @@ public class postSelection extends Activity {
         DateFormat df = new SimpleDateFormat("hh:mma", Locale.US);
         Date now = Calendar.getInstance(TimeZone.getDefault()).getTime();
         mTrip = mBService.generateTrip(origStation, destStation, df.format(now));
-        mTrip = mBService.updateDepartureTimes(mTrip);
+        mBService.updateDepartureTimes(mTrip);
     }
 
     public Leg findLeg() {
