@@ -189,7 +189,7 @@ public class PacingView extends View{
         } else {
             newColorState = 2;
         }
-        return (newColorState == mCurrColorState);
+        return (newColorState != mCurrColorState);
     }
 
     /* On swipe from top to bottom -> update the UI to show the previous train */
