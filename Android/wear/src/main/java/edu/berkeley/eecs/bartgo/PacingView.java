@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.View;
 
 public class PacingView extends View{
+    private static final String TAG = "PacingView";
     private static final double PI = 3.1416;
 
     private long mDepartureTimeInMillis, mArrivalTimeInMillis, mCurrentTimeInMillis;
@@ -64,12 +65,12 @@ public class PacingView extends View{
 
     @Override
     protected void onDraw(Canvas canvas) {
-        Log.v("PacingView", "drawing UI");
+        Log.d(TAG, "drawing UI");
         super.onDraw(canvas);
 
         /* draw background color*/
-        double offset = mDepartureTimeInMillis - mArrivalTimeInMillis;
-        if (offset > 180000) {
+        double offset = (mDepartureTimeInMillis - mArrivalTimeInMillis) / 60000;
+        if (offset > 3) {
             canvas.drawColor(getResources().getColor(R.color.dull_green));
         } else if (offset > 0) {
             canvas.drawColor(getResources().getColor(R.color.mustard));
@@ -151,7 +152,7 @@ public class PacingView extends View{
         }
 
         this.invalidate();
-        Log.v("PacingView", "UI invalidated");
+        Log.d("PacingView", "UI invalidated");
     }
 
     /* On swipe from top to bottom -> update the UI to show the previous train */
