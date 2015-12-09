@@ -67,7 +67,7 @@ public class PacingView extends View{
         mPrimaryWhitePaint.setStrokeWidth(u / 4);
         mPrimaryWhitePaint.setTextSize((float) (2.9 * u));
         mSecondaryWhitePaint.setTextSize((float) (0.8 * u));
-        mMissTrainPaint.setTextSize(u);
+        mMissTrainPaint.setTextSize((float) (1.1 * u));
 
         setMeasuredDimension(size, size);
         mGaugeBound.set(size / 10, size / 10, (float) (size * 0.9), (float) (size * 0.9));

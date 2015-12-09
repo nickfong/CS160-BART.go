@@ -63,7 +63,7 @@ public class DisplayActivity extends WearableActivity {
                     }
                 }
                 mPacingView.setDepartureTimes(bartTimes);
-                mPacingView.updateArrivalTime(currMillis + 3000000);
+                mPacingView.updateArrivalTime(currMillis + 300000); //@Patrick: still fake data here
                 mPacingView.setOnTouchListener(new OnSwipeTouchListener(mContext) {
                     public void onSwipeBottom() {
                         boolean didSucceed = mPacingView.onSwipeDown();
