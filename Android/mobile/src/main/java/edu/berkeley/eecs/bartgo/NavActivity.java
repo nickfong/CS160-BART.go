@@ -30,7 +30,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 
@@ -267,7 +266,7 @@ public class NavActivity extends Activity {
         String dLat = String.valueOf(i.getDoubleExtra("destLat", 999999));
         String dLng = String.valueOf(i.getDoubleExtra("destLng", 999999));
 
-        String url = "https://maps.googleapis.com/maps/api/directions/json?origin=" + oLat + "," + oLng + "&destination=" + dLat + "," + dLng + "&mode=walking&key=" + PrivateConstants.GOOGLE_API_SERVER_KEY;
+        String url = "https://maps.googleapis.com/maps/api/directions/json?origin=" + oLat + "," + oLng + "&destination=" + dLat + "," + dLng + "&mode=walking&key=" + PrivateConstants.GOOGLE_API_KEY;
         return url;
     }
 
