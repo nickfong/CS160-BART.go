@@ -13,7 +13,25 @@ import android.widget.Button;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import java.text.DateFormat;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Calendar;
+import java.util.Locale;
+import java.util.TimeZone;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Arrays;
+
 public class postSelection extends Activity {
+    ////////////////////////////////////////////////////////////////////////////////
+    // GLOBAL VARS
+    ////////////////////////////////////////////////////////////////////////////////
+    BartService mBService;
+    Trip mTrip;
+    Leg le;
+    String trainString;
 
     ////////////////////////////////////////////////////////////////////////////////
     // OVERRIDDEN METHODS (GENERAL)
@@ -33,11 +51,28 @@ public class postSelection extends Activity {
 
         // Capturing UI Views
         final TextView destinationString = (TextView) findViewById(R.id.selectedDestination);
+        final TextView fareString = (TextView) findViewById(R.id.costOfFare);
+        final TextView fareString2 = (TextView) findViewById(R.id.costOfFare2);
+        final TextView lineString = (TextView) findViewById(R.id.boundTrain);
+        final TextView minutesRemaining = (TextView) findViewById(R.id.mainBox);
         final Button startButton = (Button) findViewById(R.id.startButton);
         final Switch turnByTurnSwitch = (Switch) findViewById(R.id.turnbyturnSwitch);
+        Intent intent = getIntent();
 
-        String destinationSelected =  getIntent().getStringExtra("destName");
+        String destinationSelected =  intent.getStringExtra("destName");
         destinationString.setText(destinationSelected);
+        initializeTrip(destinationSelected);
+        float fare = mTrip.getFare();
+        DecimalFormat decim = new DecimalFormat("0.00");
+        fareString.setText("One-way: $" + decim.format(fare));
+        fareString2.setText("Round-trip: $" + decim.format(2*fare));
+        le = findLeg();
+        String boundTrain = mBService.lookupStationByAbbreviation(le.trainDestination).getName();
+        lineString.setText(boundTrain + " Train");
+        if (le.trains != null) {
+            minutesRemaining.setText(le.trains.get(0) + "");
+        }
+        trainString = prepareTrains();
 
         // Create OnClickListener for StartButton
         startButton.setOnClickListener(new View.OnClickListener() {
@@ -59,10 +94,55 @@ public class postSelection extends Activity {
                 toNavOrNotToNavIntent.putExtra("destLng", destLng);
                 toNavOrNotToNavIntent.putExtra("destName", destName);
                 toNavOrNotToNavIntent.putExtra("isChecked", turnByTurnSwitch.isChecked());
+                toNavOrNotToNavIntent.putExtra("trains", trainString);
                 startActivity(toNavOrNotToNavIntent);
             }
         });
 
+    }
+
+    public void initializeTrip(String dest) {
+        mBService = new BartService();
+        Station destStation = mBService.lookupStationByName(dest);
+        Station origStation = mBService.lookupStationByAbbreviation("DBRK"); // Downtown Berkeley placeholder
+        DateFormat df = new SimpleDateFormat("hh:mma", Locale.US);
+        Date now = Calendar.getInstance(TimeZone.getDefault()).getTime();
+        mTrip = mBService.generateTrip(origStation, destStation, df.format(now));
+    }
+
+    public Leg findLeg() {
+        // bestTrain is the train headed towards the trip destination
+        // arriving at the origin station the soonest. For simplicity's
+        // sake, the app will only display the trains in the same list
+        // as bestTrain
+        ArrayList<Legs> legs = mTrip.getLegs();
+        int bestIndex = 0;
+        int bestTrain = 999999;
+        for (int i = 0; i < legs.size(); i++) {
+            Leg michawk = legs.get(i).getLegs().get(0);
+            if (michawk.trains != null) {
+                int firstTrain = michawk.trains.get(0);
+                if (firstTrain < bestTrain) {
+                    bestTrain = firstTrain;
+                    bestIndex = i;
+                }
+            }
+        }
+        return legs.get(bestIndex).getLegs().get(0);
+    }
+
+    public String prepareTrains() {
+        List<Integer> trainList = le.trains;
+        if (le.trains == null) return "";
+        int numTrains = trainList.size();
+        Integer[] trainArray = trainList.toArray(new Integer[numTrains]);
+        long currMillis = new java.util.Date().getTime();
+        String trainTimes = "";
+        for (int i = 0; i < trainArray.length; i++) {
+            long temp = currMillis + (long) (trainArray[i]*60000);
+            trainTimes += temp + " ";
+        }
+        return trainTimes;
     }
 
     @Override

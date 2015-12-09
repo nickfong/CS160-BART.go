@@ -64,7 +64,7 @@ public class BartService extends Service {
             String result = new StationXmlTask().execute(call).get();
             String[] stationStrings = result.split("\n");
             for (String station : stationStrings) {
-                Log.i(TAG, "Got a station: " + station);
+//                Log.i(TAG, "Got a station: " + station);
                 String[] stationString = station.split(";");
                 if (stationString.length == 6) {
                     String abbreviation = stationString[0];
@@ -114,6 +114,20 @@ public class BartService extends Service {
     }
 
     /**
+     * Lookup a Station by its name
+     * @param name is the name of the station in question
+     * @return the Station object corresponding to the given name
+     */
+    public Station lookupStationByName(String name) {
+        for (Station station : this.stations) {
+            if (station.getName().equals(name)) {
+                return station;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Populates the internal ArrayList of Routes
      * @return an ArrayList of valid BART Routes
      */
@@ -124,7 +138,7 @@ public class BartService extends Service {
             String result = new RouteXmlTask().execute(call).get();
             String[] routeStrings = result.split("\n");
             for (String route : routeStrings) {
-                Log.i(TAG, "Got a route: " + route);
+//                Log.i(TAG, "Got a route: " + route);
                 String[] routeString = route.split(";");
                 if (routeString.length == 5) {
                     String name = routeString[0];

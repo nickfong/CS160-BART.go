@@ -45,9 +45,9 @@ public class NavActivity extends Activity {
     private GoogleApiClient mApiClient;
     private double currLat;
     private double currLong;
-    private double trainLat = 37.869914; // Placeholder for Berkeley station
-    private double trainLong = -122.268026; // Ditto
-    private double prevDist = 0;
+    private double trainLat;
+    private double trainLong; // Ditto
+//    private double prevDist = 0;
     private long[] bartTimes;
     private final String REFRESH_DATA = "/refresh_data";
     private final String NEW_TRAINS = "/new_trains";
@@ -69,6 +69,9 @@ public class NavActivity extends Activity {
         window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
         window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
         window.setStatusBarColor(Color.parseColor("#1e2a37"));
+        Intent intent = getIntent();
+        trainLat = intent.getDoubleExtra("origLat", 999999);
+        trainLong = intent.getDoubleExtra("origLng", 999999);
 
         mApiClient = new GoogleApiClient.Builder( this )
                 .addApi( Wearable.API )
@@ -82,7 +85,8 @@ public class NavActivity extends Activity {
                             currLat = mLastLocation.getLatitude();
                             currLong = mLastLocation.getLongitude();
                         }
-                        initialize();
+                        String trainTimes = getIntent().getStringExtra("trains");
+                        initialize(trainTimes);
                         handler.removeCallbacks(updater);
                         updater.run();
                     }
@@ -142,19 +146,9 @@ public class NavActivity extends Activity {
         }
     };
 
-    // This method currently creates fake train data. Used to initialize the watch interaction.
-    public void initialize() {
-        long currMillis = new java.util.Date().getTime();
-        bartTimes = new long[3]; // Set bartTimes to array of BART arrival times from BART API
-        bartTimes[0] = currMillis + 1200000; // Fake data, train arriving 20 minutes after current time
-        bartTimes[1] = currMillis + 900000;
-        bartTimes[2] = currMillis + 600000;
-        Arrays.sort(bartTimes);
-        String trainTimes = "";
-        for (int i = 0; i < bartTimes.length; i++) {
-            trainTimes += bartTimes[i] + " ";
-        }
-        sendMessage(NEW_TRAINS, trainTimes);
+    // Used to initialize the watch interaction.
+    public void initialize(String trains) {
+        sendMessage(NEW_TRAINS, trains);
     }
 
     public double getDistance(Double latitude, Double longitude) {
@@ -272,7 +266,7 @@ public class NavActivity extends Activity {
         String dLat = String.valueOf(i.getDoubleExtra("destLat", 999999));
         String dLng = String.valueOf(i.getDoubleExtra("destLng", 999999));
 
-        String url = "https://maps.googleapis.com/maps/api/directions/json?origin=" + oLat + "," + oLng + "&destination=" + dLat + "," + dLng + "&mode=walking&key=" + PrivateConstants.GOOGLE_API_KEY;
+        String url = "https://maps.googleapis.com/maps/api/directions/json?origin=" + oLat + "," + oLng + "&destination=" + dLat + "," + dLng + "&mode=walking&key=" + PrivateConstants.GOOGLE_API_SERVER_KEY;
         return url;
     }
 

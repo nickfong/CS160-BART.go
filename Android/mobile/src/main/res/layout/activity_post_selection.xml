@@ -52,7 +52,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="One-way:  $6.50"
+        android:text="One-way:"
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:id="@+id/costOfFare"
         android:layout_below="@+id/etaText"
@@ -63,7 +63,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Round-trip:  $13.00"
+        android:text="Round-trip:"
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:id="@+id/costOfFare2"
         android:layout_below="@+id/costOfFare"
