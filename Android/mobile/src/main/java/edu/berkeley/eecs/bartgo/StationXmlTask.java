@@ -31,7 +31,7 @@ class StationXmlTask extends BartXmlTask {
 
         String station_string = "";
         for (Station station : stations) {
-            station_string += station.getAbbreviation() + ";" + station.getName() + ";" + station.getAddress() + ";" + station.getZip() + ";" + station.getLatitude() + ";" + station.getLatitude() +  "\n";
+            station_string += station.getAbbreviation() + ";" + station.getName() + ";" + station.getAddress() + ";" + station.getZip() + ";" + station.getLatitude() + ";" + station.getLongitude() +  "\n";
         }
         return station_string;
     }

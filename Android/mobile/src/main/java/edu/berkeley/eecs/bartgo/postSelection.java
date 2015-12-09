@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -32,7 +33,8 @@ public class postSelection extends Activity {
     Trip mTrip;
     Leg le;
     String trainString;
-
+    static final String TAG_DEBUG = "tag_debug";
+    
     ////////////////////////////////////////////////////////////////////////////////
     // OVERRIDDEN METHODS (GENERAL)
     ////////////////////////////////////////////////////////////////////////////////

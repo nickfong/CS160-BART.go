@@ -102,6 +102,7 @@ public class NavActivity extends Activity {
         // As such, a null check on it can also be used to determine whether or not
         //   navigation has been requested.
         i = getIntent();
+
         if (i.getBooleanExtra("isChecked", false)) {
             runNav();
         }

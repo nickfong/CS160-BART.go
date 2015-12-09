@@ -151,11 +151,13 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
                 // Create post-selection intent and put extras
                 Intent postSelection = new Intent();
                 postSelection.setClass(view.getContext(), postSelection.class);
+
                 postSelection.putExtra("destName", dest);
                 postSelection.putExtra("destLat", destLat);
                 postSelection.putExtra("destLng", destLng);
                 postSelection.putExtra("origLat", origLat);
                 postSelection.putExtra("origLng", origLng);
+
                 startActivityForResult(postSelection, 1);
             }
         });
