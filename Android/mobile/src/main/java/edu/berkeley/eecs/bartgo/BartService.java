@@ -264,17 +264,19 @@ public class BartService extends Service {
             String[] etdArray = result.split(";");
             for (String etd : etdArray) {
                 String[] estimateArray = etd.split(":");
-                String destinationAbbreviation = estimateArray[0];
-                String[] estimatesArray = estimateArray[1].split(",");
-                ArrayList<Integer> estimates = new ArrayList();
-                for (String estimate : estimatesArray) {
-                    if (estimate.equals("Leaving")) {
-                        estimates.add(new Integer(0));
-                    } else {
-                        estimates.add(Integer.valueOf(estimate));
+                if(estimateArray.length == 2) {
+                    String destinationAbbreviation = estimateArray[0];
+                    String[] estimatesArray = estimateArray[1].split(",");
+                    ArrayList<Integer> estimates = new ArrayList();
+                    for (String estimate : estimatesArray) {
+                        if (estimate.equals("Leaving")) {
+                            estimates.add(new Integer(0));
+                        } else {
+                            estimates.add(Integer.valueOf(estimate));
+                        }
                     }
+                    departureTimes.put(destinationAbbreviation, estimates);
                 }
-                departureTimes.put(destinationAbbreviation, estimates);
             }
         } catch (InterruptedException e) {
             Log.e(TAG, "XmlTask execution from getDepartureTimes was interrupted: " + e);
@@ -286,15 +288,16 @@ public class BartService extends Service {
         ArrayList<Legs> legsArrayList = trip.getLegs();
         for (Legs legs : legsArrayList) {
             ArrayList<Leg> legArrayList = legs.getLegs();
-            Leg firstLeg = legArrayList.get(0);
-            String destination = firstLeg.trainDestination;
-            if (departureTimes.containsKey(destination)) {
-                firstLeg.setTrains(departureTimes.get(destination));
-                Log.i(TAG, "Setting departure times for " + destination + " bound train");
-                Log.i(TAG, "Leg goes from " + firstLeg.startStation.getAbbreviation() + " to " + firstLeg.endStation.getAbbreviation());
-            }
-            else {
-                Log.i(TAG, "Couldn't find departure times for " + destination + " bound train");
+            if(legArrayList != null && legArrayList.size() != 0) {
+                Leg firstLeg = legArrayList.get(0);
+                String destination = firstLeg.trainDestination;
+                if (departureTimes.containsKey(destination)) {
+                    firstLeg.setTrains(departureTimes.get(destination));
+                    Log.i(TAG, "Setting departure times for " + destination + " bound train");
+                    Log.i(TAG, "Leg goes from " + firstLeg.startStation.getAbbreviation() + " to " + firstLeg.endStation.getAbbreviation());
+                } else {
+                    Log.i(TAG, "Couldn't find departure times for " + destination + " bound train");
+                }
             }
         }
     }
@@ -309,8 +312,10 @@ public class BartService extends Service {
         // Populate an ArrayList with all relevant train arrival times
         ArrayList<Integer> predictionTimes = new ArrayList();
         for(Legs legs : trip.getLegs()) {
-            for(Integer prediction : legs.getLegs().get(0).trains) {
-                predictionTimes.add(prediction);
+            if(legs.getLegs() != null && legs.getLegs().size() == 0) {
+                for(Integer prediction : legs.getLegs().get(0).trains) {
+                    predictionTimes.add(prediction);
+                }
             }
         }
 
@@ -329,14 +334,21 @@ public class BartService extends Service {
         String earliestTrainAbbreviation = "";
         Integer trainETA = Integer.MAX_VALUE;
         for(Legs legs : trip.getLegs()) {
+            if(legs.getLegs() == null || legs.getLegs().size() == 0) {
+                continue;
+            }
             Leg currLeg = legs.getLegs().get(0);
             if (currLeg.trains.get(0) < trainETA) {
                 trainETA = currLeg.trains.get(0);
                 earliestTrainAbbreviation = currLeg.trainDestination;
             }
         }
-        String earliestTrain = lookupStationByAbbreviation(earliestTrainAbbreviation).getName();
-        return earliestTrain;
+        if (earliestTrainAbbreviation != "") {
+            String earliestTrain = lookupStationByAbbreviation(earliestTrainAbbreviation).getName();
+            return earliestTrain;
+        } else {
+            return "";
+        }
     }
 
     /**
