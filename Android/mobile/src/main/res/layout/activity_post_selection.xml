@@ -120,7 +120,7 @@
     <TextView
         android:layout_width="160dp"
         android:layout_height="100dp"
-        android:text="Arriving in"
+        android:text="@string/arriving_in"
         android:paddingTop="25dp"
         android:id="@+id/arriving"
         android:gravity="center"
@@ -130,8 +130,8 @@
     <TextView
         android:layout_width="160dp"
         android:layout_height="100dp"
-        android:text="minutes"
-        android:id="@+id/minutes"
+        android:text="@string/arriving_units"
+        android:id="@+id/arriving_units"
         android:gravity="center"
         android:paddingTop="25dp"
         android:layout_alignTop="@+id/mainBox"

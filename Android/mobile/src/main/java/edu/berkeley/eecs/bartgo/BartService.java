@@ -20,6 +20,7 @@ public class BartService extends Service {
     private HashMap<Integer, Route> routes;
     private ArrayList<Station> stations = null;
     private final IBinder mBinder = new LocalBinder();
+    static final String TAG_DEBUG = "tag_debug";
 
     /**
      * The BartService constructor calls populateStations() and
@@ -311,10 +312,15 @@ public class BartService extends Service {
     public ArrayList<Integer> getNextDepartureTimes(Trip trip) {
         // Populate an ArrayList with all relevant train arrival times
         ArrayList<Integer> predictionTimes = new ArrayList();
+        Log.d(TAG_DEBUG, "***** trip.getLegs():  " + trip.getLegs());
         for(Legs legs : trip.getLegs()) {
-            if(legs.getLegs() != null && legs.getLegs().size() == 0) {
-                for(Integer prediction : legs.getLegs().get(0).trains) {
-                    predictionTimes.add(prediction);
+            Log.d(TAG_DEBUG, "***** legs.getLegs().size():  " + legs.getLegs().size());
+            if(legs.getLegs() != null && legs.getLegs().size() != 0) {
+                Log.d(TAG_DEBUG, "***** legs.getLegs().get(0).trains:  " + legs.getLegs().get(0).trains);
+                if (legs.getLegs().get(0).trains != null){
+                    for (Integer prediction : legs.getLegs().get(0).trains) {
+                        predictionTimes.add(prediction);
+                    }
                 }
             }
         }
@@ -338,9 +344,15 @@ public class BartService extends Service {
                 continue;
             }
             Leg currLeg = legs.getLegs().get(0);
-            if (currLeg.trains.get(0) < trainETA) {
-                trainETA = currLeg.trains.get(0);
-                earliestTrainAbbreviation = currLeg.trainDestination;
+//            Log.d(TAG_DEBUG, "***** currLeg.trains:  " + currLeg.trains);
+//            Log.d(TAG_DEBUG, "***** currLeg.trains.get(0):  " + currLeg.trains.get(0));
+            if (currLeg.trains != null) {
+                if (currLeg.trains.get(0) < trainETA) {
+                    trainETA = currLeg.trains.get(0);
+                    earliestTrainAbbreviation = currLeg.trainDestination;
+                }
+            } else {
+                trainETA = null;
             }
         }
         if (earliestTrainAbbreviation != "") {

@@ -469,7 +469,7 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
                     .snippet(generateSnippet(stationName))
                     .draggable(true));
 //            Log.d(TAG_DEBUG, "***** Marker added at " + val);
-            Log.d(TAG_DEBUG, "***** Marker added: " + mMarker);
+//            Log.d(TAG_DEBUG, "***** Marker added: " + mMarker);
             map.setOnMarkerDragListener(new GoogleMap.OnMarkerDragListener() {
                 // Simulate long-click functionality
                 @Override

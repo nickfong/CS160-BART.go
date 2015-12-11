@@ -3,7 +3,9 @@ package edu.berkeley.eecs.bartgo;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -32,7 +34,9 @@ public class postSelection extends Activity {
     Trip mTrip;
     String trainString;
     static final String TAG_DEBUG = "tag_debug";
-
+    static final String noneRunningMsg = "None currently running.";
+    static final String noneRunningMsgAbbrev = "N/A";
+    static final String noneRunningMsgSchedInfo = "Trains usually run 4/6/8 AM - 1 AM\n(Weekdays/Sat./Sun. respectively)";
     ////////////////////////////////////////////////////////////////////////////////
     // OVERRIDDEN METHODS (GENERAL)
     ////////////////////////////////////////////////////////////////////////////////
@@ -55,25 +59,45 @@ public class postSelection extends Activity {
         final TextView fareString2 = (TextView) findViewById(R.id.costOfFare2);
         final TextView lineString = (TextView) findViewById(R.id.boundTrain);
         final TextView etaString = (TextView) findViewById(R.id.etaText);
+        final TextView arrivingIn = (TextView) findViewById(R.id.arriving);
         final TextView minutesRemaining = (TextView) findViewById(R.id.mainBox);
+        final TextView arrivingUnits = (TextView) findViewById(R.id.arriving_units);
         final Button startButton = (Button) findViewById(R.id.startButton);
         final Switch turnByTurnSwitch = (Switch) findViewById(R.id.turnbyturnSwitch);
         Intent intent = getIntent();
 
         String destinationSelected =  intent.getStringExtra("destName");
         destinationString.setText(destinationSelected);
-        etaString.setText("Train arrival: " + initializeTrip(destinationSelected));
+        String trainArrivalTime = initializeTrip(destinationSelected);
+        if (trainArrivalTime != null) {
+            etaString.setText("Train arrival: " + trainArrivalTime);
+        } else {
+            etaString.setText("Train arrival:  " + noneRunningMsgAbbrev);
+        }
         float fare = mTrip.getFare();
         DecimalFormat decim = new DecimalFormat("0.00");
-        fareString.setText("One-way: $" + decim.format(fare));
-        fareString2.setText("Round-trip: $" + decim.format(2*fare));
+        fareString.setText("One-way:  $" + decim.format(fare));
+        fareString2.setText("Round-trip:  $" + decim.format(2*fare));
         String boundTrain = mBService.getNextDepartureDestination(mTrip);
         lineString.setText(boundTrain + " Train");
-        if (trainList != null) {
+        if ((trainList != null) && (trainList.size() != 0)) {
             minutesRemaining.setText(trainList.get(0) + "");
+            setStartButtonListener(startButton, turnByTurnSwitch);
+        } else {
+            arrivingIn.setVisibility(View.INVISIBLE);
+            minutesRemaining.setText(noneRunningMsg);
+            minutesRemaining.setTextSize((float) 24);
+            minutesRemaining.setTypeface(minutesRemaining.getTypeface(), Typeface.ITALIC);
+            arrivingUnits.setVisibility(View.INVISIBLE);
+
+            startButton.setClickable(false);
+            startButton.setText(noneRunningMsgSchedInfo);
         }
         trainString = prepareTrains();
 
+    }
+
+    public void setStartButtonListener(final Button startButton, final Switch turnByTurnSwitch) {
         // Create OnClickListener for StartButton
         startButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -98,10 +122,9 @@ public class postSelection extends Activity {
                 startActivity(toNavOrNotToNavIntent);
             }
         });
-
     }
 
-    // Initializes the trip and returns the current time
+    // Initializes the trip and returns the next train's arrival time in the format h:mm
     public String initializeTrip(String dest) {
         mBService = new BartService();
         Station destStation = mBService.lookupStationByName(dest);
@@ -111,11 +134,15 @@ public class postSelection extends Activity {
         Calendar cal = Calendar.getInstance(TimeZone.getDefault());
         Date now = cal.getTime();
         mTrip = mBService.generateTrip(origStation, destStation, df.format(now));
+        Log.d(TAG_DEBUG, "***** mTrip: " + mTrip);
         mBService.updateDepartureTimes(mTrip);
-        trainList = mBService.getNextDepartureTimes(mTrip);
-        cal.add(Calendar.MINUTE, trainList.get(0));
-        String nextTrainTime = df2.format(cal.getTime());
-        return nextTrainTime;
+        trainList = mBService.getNextDepartureTimes(mTrip);  // if no legs found, returns an empty ArrayList
+        if (trainList.size() != 0) {
+            cal.add(Calendar.MINUTE, trainList.get(0));
+            return df2.format(cal.getTime()); // next train time
+        } else {
+            return null;
+        }
     }
 
 //    public Leg findLeg() {
