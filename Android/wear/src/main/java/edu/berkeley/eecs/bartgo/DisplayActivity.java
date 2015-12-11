@@ -30,6 +30,8 @@ public class DisplayActivity extends WearableActivity {
     private Context mContext = this;
     private Vibrator mVibrator;
 
+    private boolean navEnabled = false; // @Patrick: please set this var according to Mobile's msg
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -66,18 +68,26 @@ public class DisplayActivity extends WearableActivity {
                 mPacingView.updateArrivalTime(currMillis + 300000); //@Patrick: still fake data here
                 mPacingView.setOnTouchListener(new OnSwipeTouchListener(mContext) {
                     public void onSwipeBottom() {
-                        boolean didSucceed = mPacingView.onSwipeDown();
-                        if (didSucceed) {
+                        int retVal = mPacingView.onSwipeDown();
+                        if (retVal != 0) {
                             Toast.makeText(DisplayActivity.this, "Previous Train", Toast.LENGTH_SHORT).show();
+                            if (retVal == 2) {
+                                mVibrator.vibrate(mVibrationPattern, -1);
+                                Log.d("DisplayActivity", "WATCH VIBRATED");
+                            }
                         } else {
                             Toast.makeText(DisplayActivity.this, "No More", Toast.LENGTH_SHORT).show();
                         }
                     }
 
                     public void onSwipeTop() {
-                        boolean didSucceed = mPacingView.onSwipeUp();
-                        if (didSucceed) {
+                        int retVal = mPacingView.onSwipeUp();
+                        if (retVal != 0) {
                             Toast.makeText(DisplayActivity.this, "Next Train", Toast.LENGTH_SHORT).show();
+                            if (retVal == 2) {
+                                mVibrator.vibrate(mVibrationPattern, -1);
+                                Log.d("DisplayActivity", "WATCH VIBRATED");
+                            }
                         } else {
                             Toast.makeText(DisplayActivity.this, "No More", Toast.LENGTH_SHORT).show();
                         }
@@ -93,6 +103,7 @@ public class DisplayActivity extends WearableActivity {
                      * You need to supply the correct current direction though. (although I think
                      * that should be handled on the mobile side) */
                     public void onSwipeLeft() {
+                        if (!navEnabled) return;
                         Intent intent = new Intent(mContext, NavigationActivity.class);
                         //fake data
                         String[] directions = new String[3];
@@ -122,6 +133,7 @@ public class DisplayActivity extends WearableActivity {
                 long eta = Long.parseLong(receivedMsg, 10);
                 if (mPacingView.updateArrivalTime(eta)) {
                     mVibrator.vibrate(mVibrationPattern, -1);
+                    Log.d("DisplayActivity", "WATCH VIBRATED");
                 }
                 Log.d("Updated with new ETA ", eta + "");
             }

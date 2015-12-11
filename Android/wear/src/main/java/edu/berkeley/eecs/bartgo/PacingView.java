@@ -176,9 +176,6 @@ public class PacingView extends View{
             }
         }
 
-        this.invalidate();
-        Log.d("PacingView", "UI invalidated");
-
         /* determine if the UI color would change */
         long difference = mDepartureTimeInMillis - mArrivalTimeInMillis;
         int newColorState;
@@ -189,28 +186,39 @@ public class PacingView extends View{
         } else {
             newColorState = 2;
         }
+        Log.d(TAG, "current color state: " + mCurrColorState);
+        Log.d(TAG, "new color state: " + newColorState);
+
+        this.invalidate();
+        Log.d("PacingView", "UI invalidated");
         return (newColorState != mCurrColorState);
     }
 
     /* On swipe from top to bottom -> update the UI to show the previous train */
-    public boolean onSwipeDown() {
+    public int onSwipeDown() {
         if (mCriticalDepartureIndex > 0) {
             mCriticalDepartureIndex -= 1;
             mDepartureTimeInMillis = mBARTDepartureTimes[mCriticalDepartureIndex];
-            updateArrivalTime(mArrivalTimeInMillis);
-            return true;
+            if (updateArrivalTime(mArrivalTimeInMillis)) {
+                return 2; // succeed AND color changed
+            } else {
+                return 1; // succeed AND color didn't change
+            }
         }
-        return false;
+        return 0; // didn't succeed
     }
 
     /* On swipe from bottom to top -> update the UI to show the next train */
-    public boolean onSwipeUp() {
+    public int onSwipeUp() {
         if (mCriticalDepartureIndex + 1 < mBARTDepartureTimes.length) {
             mCriticalDepartureIndex += 1;
             mDepartureTimeInMillis = mBARTDepartureTimes[mCriticalDepartureIndex];
-            updateArrivalTime(mArrivalTimeInMillis);
-            return true;
+            if (updateArrivalTime(mArrivalTimeInMillis)) {
+                return 2; // succeed AND color changed
+            } else {
+                return 1; // succeed AND color didn't change
+            }
         }
-        return false;
+        return 0; // didn't succeed
     }
 }
