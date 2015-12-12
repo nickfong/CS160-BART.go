@@ -10,6 +10,7 @@ import android.os.IBinder;
 import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.concurrent.ExecutionException;
@@ -19,6 +20,7 @@ public class BartService extends Service {
     private HashMap<Integer, Route> routes;
     private ArrayList<Station> stations = null;
     private final IBinder mBinder = new LocalBinder();
+    static final String TAG_DEBUG = "tag_debug";
 
     /**
      * The BartService constructor calls populateStations() and
@@ -64,14 +66,16 @@ public class BartService extends Service {
             String result = new StationXmlTask().execute(call).get();
             String[] stationStrings = result.split("\n");
             for (String station : stationStrings) {
-                Log.i(TAG, "Got a station: " + station);
+//                Log.i(TAG, "Got a station: " + station);
                 String[] stationString = station.split(";");
-                if (stationString.length == 4) {
+                if (stationString.length == 6) {
                     String abbreviation = stationString[0];
                     String name = stationString[1];
                     String address = stationString[2];
                     String zip = stationString[3];
-                    stations.add(new Station(abbreviation, name, address, zip));
+                    String latitude = stationString[4];
+                    String longitude = stationString[5];
+                    stations.add(new Station(abbreviation, name, address, zip, latitude, longitude));
                 }
             }
         } catch (InterruptedException e) {
@@ -112,6 +116,20 @@ public class BartService extends Service {
     }
 
     /**
+     * Lookup a Station by its name
+     * @param name is the name of the station in question
+     * @return the Station object corresponding to the given name
+     */
+    public Station lookupStationByName(String name) {
+        for (Station station : this.stations) {
+            if (station.getName().equals(name)) {
+                return station;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Populates the internal ArrayList of Routes
      * @return an ArrayList of valid BART Routes
      */
@@ -122,7 +140,7 @@ public class BartService extends Service {
             String result = new RouteXmlTask().execute(call).get();
             String[] routeStrings = result.split("\n");
             for (String route : routeStrings) {
-                Log.i(TAG, "Got a route: " + route);
+//                Log.i(TAG, "Got a route: " + route);
                 String[] routeString = route.split(";");
                 if (routeString.length == 5) {
                     String name = routeString[0];
@@ -241,22 +259,25 @@ public class BartService extends Service {
         HashMap<String, ArrayList<Integer>> departureTimes = new HashMap();
         try {
             String result = new TrainXmlTask().execute(call).get();
-
+            if (result.length() == 0) {
+                return;
+            }
             String[] etdArray = result.split(";");
             for (String etd : etdArray) {
                 String[] estimateArray = etd.split(":");
-                String destinationAbbreviation = estimateArray[0];
-                String[] estimatesArray = estimateArray[1].split(",");
-                ArrayList<Integer> estimates = new ArrayList();
-                for (String estimate : estimatesArray) {
-                    if (estimate.equals("Leaving")) {
-                        estimates.add(new Integer(0));
+                if(estimateArray.length == 2) {
+                    String destinationAbbreviation = estimateArray[0];
+                    String[] estimatesArray = estimateArray[1].split(",");
+                    ArrayList<Integer> estimates = new ArrayList();
+                    for (String estimate : estimatesArray) {
+                        if (estimate.equals("Leaving")) {
+                            estimates.add(new Integer(0));
+                        } else {
+                            estimates.add(Integer.valueOf(estimate));
+                        }
                     }
-                    else {
-                        estimates.add(Integer.valueOf(estimate));
-                    }
+                    departureTimes.put(destinationAbbreviation, estimates);
                 }
-                departureTimes.put(destinationAbbreviation, estimates);
             }
         } catch (InterruptedException e) {
             Log.e(TAG, "XmlTask execution from getDepartureTimes was interrupted: " + e);
@@ -268,16 +289,77 @@ public class BartService extends Service {
         ArrayList<Legs> legsArrayList = trip.getLegs();
         for (Legs legs : legsArrayList) {
             ArrayList<Leg> legArrayList = legs.getLegs();
-            Leg firstLeg = legArrayList.get(0);
-            String destination = firstLeg.trainDestination;
-            if (departureTimes.containsKey(destination)) {
-                firstLeg.setTrains(departureTimes.get(destination));
-                Log.i(TAG, "Setting departure times for " + destination + " bound train");
-                Log.i(TAG, "Leg goes from " + firstLeg.startStation.getAbbreviation() + " to " + firstLeg.endStation.getAbbreviation());
+            if(legArrayList != null && legArrayList.size() != 0) {
+                Leg firstLeg = legArrayList.get(0);
+                String destination = firstLeg.trainDestination;
+                if (departureTimes.containsKey(destination)) {
+                    firstLeg.setTrains(departureTimes.get(destination));
+                    Log.i(TAG, "Setting departure times for " + destination + " bound train");
+                    Log.i(TAG, "Leg goes from " + firstLeg.startStation.getAbbreviation() + " to " + firstLeg.endStation.getAbbreviation());
+                } else {
+                    Log.i(TAG, "Couldn't find departure times for " + destination + " bound train");
+                }
             }
-            else {
-                Log.i(TAG, "Couldn't find departure times for " + destination + " bound train");
+        }
+    }
+
+    /**
+     * Return a list of departure times for all relevant trains
+     * Assumes that updateDepartureTimes() has been called already
+     * @param trip is the Trip in question
+     * @return a space-delimited String of departure times for all relevant trains
+     */
+    public ArrayList<Integer> getNextDepartureTimes(Trip trip) {
+        // Populate an ArrayList with all relevant train arrival times
+        ArrayList<Integer> predictionTimes = new ArrayList();
+        Log.d(TAG_DEBUG, "***** trip.getLegs():  " + trip.getLegs());
+        for(Legs legs : trip.getLegs()) {
+            Log.d(TAG_DEBUG, "***** legs.getLegs().size():  " + legs.getLegs().size());
+            if(legs.getLegs() != null && legs.getLegs().size() != 0) {
+                Log.d(TAG_DEBUG, "***** legs.getLegs().get(0).trains:  " + legs.getLegs().get(0).trains);
+                if (legs.getLegs().get(0).trains != null){
+                    for (Integer prediction : legs.getLegs().get(0).trains) {
+                        predictionTimes.add(prediction);
+                    }
+                }
             }
+        }
+
+        // Sort the ArrayList
+        Collections.sort(predictionTimes);
+
+        return predictionTimes;
+    }
+
+    /**
+     * Return the next relevant train's destination
+     * @param trip is the Trip in question
+     * @return a string correponding to the next relevant train's destination
+     */
+    public String getNextDepartureDestination(Trip trip) {
+        String earliestTrainAbbreviation = "";
+        Integer trainETA = Integer.MAX_VALUE;
+        for(Legs legs : trip.getLegs()) {
+            if(legs.getLegs() == null || legs.getLegs().size() == 0) {
+                continue;
+            }
+            Leg currLeg = legs.getLegs().get(0);
+//            Log.d(TAG_DEBUG, "***** currLeg.trains:  " + currLeg.trains);
+//            Log.d(TAG_DEBUG, "***** currLeg.trains.get(0):  " + currLeg.trains.get(0));
+            if (currLeg.trains != null) {
+                if (currLeg.trains.get(0) < trainETA) {
+                    trainETA = currLeg.trains.get(0);
+                    earliestTrainAbbreviation = currLeg.trainDestination;
+                }
+            } else {
+                trainETA = null;
+            }
+        }
+        if (earliestTrainAbbreviation != "") {
+            String earliestTrain = lookupStationByAbbreviation(earliestTrainAbbreviation).getName();
+            return earliestTrain;
+        } else {
+            return "";
         }
     }
 

@@ -54,6 +54,9 @@ public class StationXmlParser extends BartXmlParser {
         String stationName = null;
         String address = null;
         String zip = null;
+        String latitude = null;
+        String longitude = null;
+
         while (parser.next() != XmlPullParser.END_TAG) {
             String name = parser.getName();
             if (name.equals("name")) {
@@ -64,11 +67,15 @@ public class StationXmlParser extends BartXmlParser {
                 address = readAddress(parser);
             } else if (name.equals("zipcode")) {
                 zip = readZipcode(parser);
+            } else if (name.equals("gtfs_latitude")) {
+                latitude = readLatitude(parser);
+            } else if (name.equals("gtfs_longitude")) {
+                longitude = readLongitude(parser);
             } else {
                 skip(parser);
             }
         }
-        return new Station(abbreviation, stationName, address, zip);
+        return new Station(abbreviation, stationName, address, zip, latitude, longitude);
     }
 
     private String readName(XmlPullParser parser) throws IOException, XmlPullParserException {
@@ -98,5 +105,20 @@ public class StationXmlParser extends BartXmlParser {
         parser.require(XmlPullParser.END_TAG, ns, "zipcode");
         return zipcode;
     }
+
+    private String readLatitude(XmlPullParser parser) throws IOException, XmlPullParserException {
+        parser.require(XmlPullParser.START_TAG, ns, "gtfs_latitude");
+        String latitude = readText(parser);
+        parser.require(XmlPullParser.END_TAG, ns, "gtfs_latitude");
+        return latitude;
+    }
+
+    private String readLongitude(XmlPullParser parser) throws IOException, XmlPullParserException {
+        parser.require(XmlPullParser.START_TAG, ns, "gtfs_longitude");
+        String longitude = readText(parser);
+        parser.require(XmlPullParser.END_TAG, ns, "gtfs_longitude");
+        return longitude;
+    }
+
 }
 

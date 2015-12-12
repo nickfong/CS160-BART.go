@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.os.Vibrator;
 import android.support.wearable.activity.WearableActivity;
 import android.support.wearable.view.DismissOverlayView;
 import android.support.wearable.view.WatchViewStub;
@@ -14,11 +15,12 @@ import android.util.Log;
 import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Locale;
 
 public class DisplayActivity extends WearableActivity {
     public static final String NAV_EXTRA = "NAV_DIRECTION";
-
+    private static final long[] mVibrationPattern = {0, 500, 50, 300};
     private static final SimpleDateFormat AMBIENT_DATE_FORMAT =
             new SimpleDateFormat("HH:mm", Locale.US);
 
@@ -26,6 +28,9 @@ public class DisplayActivity extends WearableActivity {
     private DismissOverlayView mDismissOverlay;
     private PacingView mPacingView;
     private Context mContext = this;
+    private Vibrator mVibrator;
+
+    private boolean navEnabled = false; // @Patrick: please set this var according to Mobile's msg
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,39 +41,58 @@ public class DisplayActivity extends WearableActivity {
         stub.setOnLayoutInflatedListener(new WatchViewStub.OnLayoutInflatedListener() {
             @Override
             public void onLayoutInflated(WatchViewStub stub) {
-
-                // Obtain the DismissOverlayView element
                 mDismissOverlay = (DismissOverlayView) stub.findViewById(R.id.dismiss_overlay);
                 mDismissOverlay.setIntroText(R.string.long_press_intro);
                 mDismissOverlay.showIntroIfNecessary();
 
-                mPacingView = (PacingView) stub.findViewById(R.id.pacingView);
+                mVibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
 
+                mPacingView = (PacingView) stub.findViewById(R.id.pacingView);
                 long currMillis = new java.util.Date().getTime();
                 Intent intent = getIntent();
-                String trainTimes = intent.getStringExtra("start");
+                String fullMessage = intent.getStringExtra("start");
+                String trainTimes = fullMessage.substring(0, fullMessage.length()-1);
+                char navSwitch = fullMessage.charAt(fullMessage.length()-1);
+                if (navSwitch == '1') {
+                    navEnabled = true;
+                }
                 String[] bartStringTimes = trainTimes.split(" ");
                 int numTrains = bartStringTimes.length;
                 long[] bartTimes = new long[numTrains];
-                for (int i = 0; i < numTrains; i++) {
-                    bartTimes[i] = Long.parseLong(bartStringTimes[i], 10);
+                Log.d("DisplayActivity", "bartStringTimes is " + Arrays.toString(bartStringTimes));
+                if (bartStringTimes[0].equals("")) {
+                    bartTimes[0] = 0; // error case
+                    Toast.makeText(DisplayActivity.this, "Data Error", Toast.LENGTH_LONG).show();
+                } else {
+                    for (int i = 0; i < numTrains; i++) {
+                        Log.d("DisplayActivity", "parsing index: " + i);
+                        bartTimes[i] = Long.parseLong(bartStringTimes[i], 10);
+                    }
                 }
                 mPacingView.setDepartureTimes(bartTimes);
-                mPacingView.updateArrivalTime(currMillis + 300000);
+                mPacingView.updateArrivalTime(currMillis + 300000); //@Patrick: still fake data here
                 mPacingView.setOnTouchListener(new OnSwipeTouchListener(mContext) {
                     public void onSwipeBottom() {
-                        boolean didSucceed = mPacingView.onSwipeUp();
-                        if (didSucceed) {
+                        int retVal = mPacingView.onSwipeDown();
+                        if (retVal != 0) {
                             Toast.makeText(DisplayActivity.this, "Previous Train", Toast.LENGTH_SHORT).show();
+                            if (retVal == 2) {
+                                mVibrator.vibrate(mVibrationPattern, -1);
+                                Log.d("DisplayActivity", "WATCH VIBRATED");
+                            }
                         } else {
                             Toast.makeText(DisplayActivity.this, "No More", Toast.LENGTH_SHORT).show();
                         }
                     }
 
                     public void onSwipeTop() {
-                        boolean didSucceed = mPacingView.onSwipeDown();
-                        if (didSucceed) {
+                        int retVal = mPacingView.onSwipeUp();
+                        if (retVal != 0) {
                             Toast.makeText(DisplayActivity.this, "Next Train", Toast.LENGTH_SHORT).show();
+                            if (retVal == 2) {
+                                mVibrator.vibrate(mVibrationPattern, -1);
+                                Log.d("DisplayActivity", "WATCH VIBRATED");
+                            }
                         } else {
                             Toast.makeText(DisplayActivity.this, "No More", Toast.LENGTH_SHORT).show();
                         }
@@ -84,6 +108,7 @@ public class DisplayActivity extends WearableActivity {
                      * You need to supply the correct current direction though. (although I think
                      * that should be handled on the mobile side) */
                     public void onSwipeLeft() {
+                        if (!navEnabled) return;
                         Intent intent = new Intent(mContext, NavigationActivity.class);
                         //fake data
                         String[] directions = new String[3];
@@ -111,7 +136,10 @@ public class DisplayActivity extends WearableActivity {
                 //extract our message from intent
                 String receivedMsg = intent.getStringExtra("msg");
                 long eta = Long.parseLong(receivedMsg, 10);
-                mPacingView.updateArrivalTime(eta);
+                if (mPacingView.updateArrivalTime(eta)) {
+                    mVibrator.vibrate(mVibrationPattern, -1);
+                    Log.d("DisplayActivity", "WATCH VIBRATED");
+                }
                 Log.d("Updated with new ETA ", eta + "");
             }
         };

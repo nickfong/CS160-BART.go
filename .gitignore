@@ -19,6 +19,7 @@ hs_err_pid*
 /local.properties
 Android/.idea/workspace.xml
 Android/.idea/libraries
+Android/.idea/*
 Android/Android.iml
 Android/build/*
 .DS_Store

@@ -9,21 +9,27 @@ import android.util.Log;
 import android.view.View;
 
 public class PacingView extends View{
+    private static final String TAG = "PacingView";
     private static final double PI = 3.1416;
 
     private long mDepartureTimeInMillis, mArrivalTimeInMillis, mCurrentTimeInMillis;
     private String mMinutesTillDeparture, mMinutesTillArrival;
     private long[] mBARTDepartureTimes;
     private int mCriticalDepartureIndex;
+    private boolean mDidMiss = false;
+    private int mCurrColorState;
     private RectF mGaugeBound = new RectF();
     private final Paint mGaugePaint = new Paint();
     private final Paint mBARTBarPaint = new Paint();
     private final Paint mPrimaryWhitePaint = new Paint();
     private final Paint mSecondaryWhitePaint = new Paint();
+    private final Paint mMissTrainPaint = new Paint();
 
     public PacingView(Context context, AttributeSet attrs) {
         super(context, attrs);
         Log.v("PacingView", "constructor called");
+
+        mCurrColorState = -1;
 
         mGaugePaint.setAntiAlias(true);
         mGaugePaint.setColor(getResources().getColor(R.color.white_50));
@@ -40,6 +46,10 @@ public class PacingView extends View{
         mSecondaryWhitePaint.setAntiAlias(true);
         mSecondaryWhitePaint.setColor(getResources().getColor(R.color.white));
         mSecondaryWhitePaint.setTextAlign(Paint.Align.CENTER);
+
+        mMissTrainPaint.setAntiAlias(true);
+        mMissTrainPaint.setColor(getResources().getColor(R.color.white));
+        mMissTrainPaint.setTextAlign(Paint.Align.CENTER);
     }
 
     @Override
@@ -57,6 +67,7 @@ public class PacingView extends View{
         mPrimaryWhitePaint.setStrokeWidth(u / 4);
         mPrimaryWhitePaint.setTextSize((float) (2.9 * u));
         mSecondaryWhitePaint.setTextSize((float) (0.8 * u));
+        mMissTrainPaint.setTextSize((float) (1.1 * u));
 
         setMeasuredDimension(size, size);
         mGaugeBound.set(size / 10, size / 10, (float) (size * 0.9), (float) (size * 0.9));
@@ -64,17 +75,20 @@ public class PacingView extends View{
 
     @Override
     protected void onDraw(Canvas canvas) {
-        Log.v("PacingView", "drawing UI");
+        Log.d(TAG, "drawing UI");
         super.onDraw(canvas);
 
         /* draw background color*/
-        double offset = mDepartureTimeInMillis - mArrivalTimeInMillis;
-        if (offset > 180000) {
+        double offset = (mDepartureTimeInMillis - mArrivalTimeInMillis) / 60000;
+        if (offset > 3) {
             canvas.drawColor(getResources().getColor(R.color.dull_green));
+            mCurrColorState = 0;
         } else if (offset > 0) {
             canvas.drawColor(getResources().getColor(R.color.mustard));
+            mCurrColorState = 1;
         } else {
             canvas.drawColor(getResources().getColor(R.color.sunset_orange));
+            mCurrColorState = 2;
         }
         float u = getWidth() / 10;
 
@@ -98,8 +112,12 @@ public class PacingView extends View{
         canvas.drawLine(5 * u, u / 2, 5 * u, 2 * u, mPrimaryWhitePaint);
 
         /* draw next departure time */
-        canvas.drawText(mMinutesTillDeparture, (float) (6.8 * u), (float) (7.4 * u), mPrimaryWhitePaint);
-        canvas.drawText("BART", (float) (6.8 * u), (float) (8.2 * u), mSecondaryWhitePaint);
+        if (mDidMiss) {
+            canvas.drawText("Train Missed", 5 * u, (float) (7.4 * u), mMissTrainPaint);
+        } else {
+            canvas.drawText(mMinutesTillDeparture, (float) (6.8 * u), (float) (7.4 * u), mPrimaryWhitePaint);
+            canvas.drawText("BART", (float) (6.8 * u), (float) (8.2 * u), mSecondaryWhitePaint);
+        }
 
         /* draw estimated arrival dot on the gauge */
         double alpha = offset * PI / 20;
@@ -115,8 +133,10 @@ public class PacingView extends View{
         canvas.drawCircle(x, y, u / 2, mPrimaryWhitePaint);
 
         /* draw estimated arrival time */
-        canvas.drawText(mMinutesTillArrival, (float) (3.1 * u), (float) (7.4 * u), mPrimaryWhitePaint);
-        canvas.drawText("YOU", (float) (3.2 * u), (float) (8.2 * u), mSecondaryWhitePaint);
+        if (!mDidMiss) {
+            canvas.drawText(mMinutesTillArrival, (float) (3.1 * u), (float) (7.4 * u), mPrimaryWhitePaint);
+            canvas.drawText("YOU", (float) (3.2 * u), (float) (8.2 * u), mSecondaryWhitePaint);
+        }
     }
 
     /* --- The methods below are useful for Patrick --- */
@@ -130,9 +150,10 @@ public class PacingView extends View{
     }
 
     /* Update the UI to show a newer estimate of the user's arrival time
+     * Return: whether the UI background color would change at this update
      * newEstimateInMillis: user's new estimate arrival time in milliseconds since UNIX epoch
      * REFRESH THE ENTIRE UI */
-    public void updateArrivalTime(long newEstimateInMillis) {
+    public boolean updateArrivalTime(long newEstimateInMillis) {
         mArrivalTimeInMillis = newEstimateInMillis;
         mCurrentTimeInMillis = new java.util.Date().getTime();
 
@@ -145,34 +166,59 @@ public class PacingView extends View{
 
         /* get Minutes Till Departure */
         temp = (int) ((mDepartureTimeInMillis - mCurrentTimeInMillis) / 60000);
-        mMinutesTillDeparture = String.valueOf(temp);
-        if (mMinutesTillDeparture.length() == 1) {
-            mMinutesTillDeparture = "0" + mMinutesTillDeparture;
+        if (temp < 0) {
+            mDidMiss = true;
+        } else {
+            mDidMiss = false;
+            mMinutesTillDeparture = String.valueOf(temp);
+            if (mMinutesTillDeparture.length() == 1) {
+                mMinutesTillDeparture = "0" + mMinutesTillDeparture;
+            }
         }
 
+        /* determine if the UI color would change */
+        long difference = mDepartureTimeInMillis - mArrivalTimeInMillis;
+        int newColorState;
+        if (difference > 180000) {
+            newColorState = 0;
+        } else if (difference > 0) {
+            newColorState = 1;
+        } else {
+            newColorState = 2;
+        }
+        Log.d(TAG, "current color state: " + mCurrColorState);
+        Log.d(TAG, "new color state: " + newColorState);
+
         this.invalidate();
-        Log.v("PacingView", "UI invalidated");
+        Log.d("PacingView", "UI invalidated");
+        return (newColorState != mCurrColorState);
     }
 
     /* On swipe from top to bottom -> update the UI to show the previous train */
-    public boolean onSwipeDown() {
+    public int onSwipeDown() {
         if (mCriticalDepartureIndex > 0) {
             mCriticalDepartureIndex -= 1;
             mDepartureTimeInMillis = mBARTDepartureTimes[mCriticalDepartureIndex];
-            updateArrivalTime(mArrivalTimeInMillis);
-            return true;
+            if (updateArrivalTime(mArrivalTimeInMillis)) {
+                return 2; // succeed AND color changed
+            } else {
+                return 1; // succeed AND color didn't change
+            }
         }
-        return false;
+        return 0; // didn't succeed
     }
 
     /* On swipe from bottom to top -> update the UI to show the next train */
-    public boolean onSwipeUp() {
+    public int onSwipeUp() {
         if (mCriticalDepartureIndex + 1 < mBARTDepartureTimes.length) {
             mCriticalDepartureIndex += 1;
             mDepartureTimeInMillis = mBARTDepartureTimes[mCriticalDepartureIndex];
-            updateArrivalTime(mArrivalTimeInMillis);
-            return true;
+            if (updateArrivalTime(mArrivalTimeInMillis)) {
+                return 2; // succeed AND color changed
+            } else {
+                return 1; // succeed AND color didn't change
+            }
         }
-        return false;
+        return 0; // didn't succeed
     }
 }

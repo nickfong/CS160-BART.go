@@ -33,6 +33,10 @@ class TrainXmlTask extends BartXmlTask {
         for (String s : trains) {
             estimate += s + ";";
         }
+
+        if (estimate.equals("")) {
+            return "";
+        }
         return estimate.substring(0, estimate.length() - 1);
     }
 }

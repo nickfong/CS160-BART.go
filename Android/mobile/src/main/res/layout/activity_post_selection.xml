@@ -42,7 +42,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="Estimated trip time:  50 min"
+        android:text="Train arrival: "
         android:id="@+id/etaText"
         android:layout_below="@+id/tripdetails"
         android:paddingTop="15dp"
@@ -52,7 +52,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="One-way:  $6.50"
+        android:text="One-way:"
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:id="@+id/costOfFare"
         android:layout_below="@+id/etaText"
@@ -63,7 +63,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Round-trip:  $13.00"
+        android:text="Round-trip:"
         android:textAppearance="?android:attr/textAppearanceSmall"
         android:id="@+id/costOfFare2"
         android:layout_below="@+id/costOfFare"
@@ -120,7 +120,7 @@
     <TextView
         android:layout_width="160dp"
         android:layout_height="100dp"
-        android:text="Arriving in"
+        android:text="@string/arriving_in"
         android:paddingTop="25dp"
         android:id="@+id/arriving"
         android:gravity="center"
@@ -130,8 +130,8 @@
     <TextView
         android:layout_width="160dp"
         android:layout_height="100dp"
-        android:text="minutes"
-        android:id="@+id/minutes"
+        android:text="@string/arriving_units"
+        android:id="@+id/arriving_units"
         android:gravity="center"
         android:paddingTop="25dp"
         android:layout_alignTop="@+id/mainBox"

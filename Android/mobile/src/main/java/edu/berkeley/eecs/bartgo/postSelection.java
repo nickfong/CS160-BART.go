@@ -3,18 +3,40 @@ package edu.berkeley.eecs.bartgo;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
 
-public class postSelection extends Activity {
+import java.text.DateFormat;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+import java.util.TimeZone;
 
+public class postSelection extends Activity {
+    ////////////////////////////////////////////////////////////////////////////////
+    // GLOBAL VARS
+    ////////////////////////////////////////////////////////////////////////////////
+    BartService mBService;
+    List<Integer> trainList;
+    Trip mTrip;
+    String trainString;
+    static final String TAG_DEBUG = "tag_debug";
+    static final String noneRunningMsg = "None currently running.";
+    static final String noneRunningMsgAbbrev = "N/A";
+    static final String noneRunningMsgSchedInfo = "Trains usually run 4/6/8 AM - 1 AM\n(Weekdays/Sat./Sun. respectively)";
     ////////////////////////////////////////////////////////////////////////////////
     // OVERRIDDEN METHODS (GENERAL)
     ////////////////////////////////////////////////////////////////////////////////
@@ -33,12 +55,52 @@ public class postSelection extends Activity {
 
         // Capturing UI Views
         final TextView destinationString = (TextView) findViewById(R.id.selectedDestination);
+        final TextView fareString = (TextView) findViewById(R.id.costOfFare);
+        final TextView fareString2 = (TextView) findViewById(R.id.costOfFare2);
+        final TextView lineString = (TextView) findViewById(R.id.boundTrain);
+        final TextView etaString = (TextView) findViewById(R.id.etaText);
+        final TextView arrivingIn = (TextView) findViewById(R.id.arriving);
+        final TextView minutesRemaining = (TextView) findViewById(R.id.mainBox);
+        final TextView arrivingUnits = (TextView) findViewById(R.id.arriving_units);
         final Button startButton = (Button) findViewById(R.id.startButton);
         final Switch turnByTurnSwitch = (Switch) findViewById(R.id.turnbyturnSwitch);
+        Intent intent = getIntent();
 
-        String destinationSelected =  getIntent().getStringExtra("destName");
+        String destinationSelected =  intent.getStringExtra("destName");
         destinationString.setText(destinationSelected);
 
+        setUpperBG(destinationSelected);
+
+        String trainArrivalTime = initializeTrip(destinationSelected);
+        if (trainArrivalTime != null) {
+            etaString.setText("Train arrival: " + trainArrivalTime);
+        } else {
+            etaString.setText("Train arrival:  " + noneRunningMsgAbbrev);
+        }
+        float fare = mTrip.getFare();
+        DecimalFormat decim = new DecimalFormat("0.00");
+        fareString.setText("One-way:  $" + decim.format(fare));
+        fareString2.setText("Round-trip:  $" + decim.format(2*fare));
+        String boundTrain = mBService.getNextDepartureDestination(mTrip);
+        lineString.setText(boundTrain + " Train");
+        if ((trainList != null) && (trainList.size() != 0)) {
+            minutesRemaining.setText(trainList.get(0) + "");
+            setStartButtonListener(startButton, turnByTurnSwitch);
+        } else {
+            arrivingIn.setVisibility(View.INVISIBLE);
+            minutesRemaining.setText(noneRunningMsg);
+            minutesRemaining.setTextSize((float) 24);
+            minutesRemaining.setTypeface(minutesRemaining.getTypeface(), Typeface.ITALIC);
+            arrivingUnits.setVisibility(View.INVISIBLE);
+
+            startButton.setClickable(false);
+            startButton.setText(noneRunningMsgSchedInfo);
+        }
+        trainString = prepareTrains();
+
+    }
+
+    public void setStartButtonListener(final Button startButton, final Switch turnByTurnSwitch) {
         // Create OnClickListener for StartButton
         startButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -59,10 +121,212 @@ public class postSelection extends Activity {
                 toNavOrNotToNavIntent.putExtra("destLng", destLng);
                 toNavOrNotToNavIntent.putExtra("destName", destName);
                 toNavOrNotToNavIntent.putExtra("isChecked", turnByTurnSwitch.isChecked());
+                toNavOrNotToNavIntent.putExtra("trains", trainString);
                 startActivity(toNavOrNotToNavIntent);
             }
         });
+    }
 
+    // Sets the background image at the top of the postSelection view
+    // Different image for each station
+
+    public void setUpperBG(String destination){
+        ImageView upperBG= (ImageView) findViewById(R.id.upperBG);
+
+        if (destination.equals("12th St. Oakland City Center")){
+            upperBG.setImageResource(R.drawable.twelvestoakland);
+        }
+        else if (destination.equals("16th St. Mission")){
+            upperBG.setImageResource(R.drawable.embarcadero);
+        }
+        else if (destination.equals("19th St. Oakland")){
+            upperBG.setImageResource(R.drawable.nineteenoak);
+        }
+        else if (destination.equals("24th St. Mission")){
+            upperBG.setImageResource(R.drawable.twentyfourmission);
+        }
+        else if (destination.equals("Ashby")){
+            upperBG.setImageResource(R.drawable.ashby);
+        }
+        else if (destination.equals("Balboa Park")){
+            upperBG.setImageResource(R.drawable.balboapark);
+        }
+        else if (destination.equals("Bay Fair")){
+            upperBG.setImageResource(R.drawable.bayfair);
+        }
+        else if (destination.equals("Castro Valley")){
+            upperBG.setImageResource(R.drawable.castrovalley);
+        }
+        else if (destination.equals("Civic Center/UN Plaza")){
+            upperBG.setImageResource(R.drawable.civiccenter);
+        }
+        else if (destination.equals("Coliseum")){
+            upperBG.setImageResource(R.drawable.coliseum);
+        }
+        else if (destination.equals("Colma")){
+            upperBG.setImageResource(R.drawable.colma);
+        }
+        else if (destination.equals("Concord")){
+            upperBG.setImageResource(R.drawable.concord);
+        }
+        else if (destination.equals("Daly City")){
+            upperBG.setImageResource(R.drawable.dalycity);
+        }
+        else if (destination.equals("Downtown Berkeley")){
+            upperBG.setImageResource(R.drawable.downtownberk);
+        }
+        else if (destination.equals("Dublin/Pleasanton")){
+            upperBG.setImageResource(R.drawable.pleasanton);
+        }
+        else if (destination.equals("El Cerrito del Norte")){
+            upperBG.setImageResource(R.drawable.elcerritodelnorte);
+        }
+        else if (destination.equals("El Cerrito Plaza")){
+            upperBG.setImageResource(R.drawable.elcerritoplaza);
+        }
+        else if (destination.equals("Embarcadero")){
+            upperBG.setImageResource(R.drawable.embarcadero);
+        }
+        else if (destination.equals("Fremont")){
+            upperBG.setImageResource(R.drawable.fremont);
+        }
+        else if (destination.equals("Fruitvale")){
+            upperBG.setImageResource(R.drawable.fruitvale);
+        }
+        else if (destination.equals("Glen Park")){
+            upperBG.setImageResource(R.drawable.glenpark);
+        }
+        else if (destination.equals("Hayward")){
+            upperBG.setImageResource(R.drawable.hayward);
+        }
+        else if (destination.equals("Lafayette")){
+            upperBG.setImageResource(R.drawable.lafayette);
+        }
+        else if (destination.equals("Lake Merritt")){
+            upperBG.setImageResource(R.drawable.lakemerritt);
+        }
+        else if (destination.equals("MacArthur")){
+            upperBG.setImageResource(R.drawable.macarthur);
+        }
+        else if (destination.equals("Millbrae")){
+            upperBG.setImageResource(R.drawable.millbrae);
+        }
+        else if (destination.equals("Montgomery St.")){
+            upperBG.setImageResource(R.drawable.montgomery);
+        }
+        else if (destination.equals("North Berkeley")){
+            upperBG.setImageResource(R.drawable.northberk);
+        }
+        else if (destination.equals("North Concord/Martinez")){
+            upperBG.setImageResource(R.drawable.northconcord);
+        }
+        else if (destination.equals("Oakland Int'l Airport")){
+            upperBG.setImageResource(R.drawable.oakairport);
+        }
+        else if (destination.equals("Orinda")){
+            upperBG.setImageResource(R.drawable.orinda);
+        }
+        else if (destination.equals("Pittsburg/Bay Point")){
+            upperBG.setImageResource(R.drawable.pbaypoint);
+        }
+        else if (destination.equals("Pleasant Hill/Contra Costa Centre")){
+            upperBG.setImageResource(R.drawable.pleasanthill);
+        }
+        else if (destination.equals("Powell St.")){
+            upperBG.setImageResource(R.drawable.powell);
+        }
+        else if (destination.equals("Richmond")){
+            upperBG.setImageResource(R.drawable.embarcadero);
+        }
+        else if (destination.equals("Rockridge")){
+            upperBG.setImageResource(R.drawable.rockridge);
+        }
+        else if (destination.equals("San Bruno")){
+            upperBG.setImageResource(R.drawable.embarcadero);
+        }
+        else if (destination.equals("San Francisco Int'l Airport")){
+            upperBG.setImageResource(R.drawable.sfo);
+        }
+        else if (destination.equals("San Leandro")){
+            upperBG.setImageResource(R.drawable.sanleandro);
+        }
+        else if (destination.equals("South Hayward")){
+            upperBG.setImageResource(R.drawable.hayward);
+        }
+        else if (destination.equals("South San Francisco")){
+            upperBG.setImageResource(R.drawable.southsf);
+        }
+        else if (destination.equals("Union City")){
+            upperBG.setImageResource(R.drawable.embarcadero);
+        }
+        else if (destination.equals("Walnut Creek")){
+            upperBG.setImageResource(R.drawable.walnutcreek);
+        }
+        else if (destination.equals("West Dublin/Pleasanton")){
+            upperBG.setImageResource(R.drawable.embarcadero);
+        }
+        else if (destination.equals("West Oakland")){
+            upperBG.setImageResource(R.drawable.westoak);
+        }
+        // Just in case a weird name appears
+        // Set default to SF waterfront image
+        else {
+            upperBG.setImageResource(R.drawable.embarcadero);
+        }
+
+    }
+    // Initializes the trip and returns the next train's arrival time in the format h:mm
+    public String initializeTrip(String dest) {
+        mBService = new BartService();
+        Station destStation = mBService.lookupStationByName(dest);
+        Station origStation = mBService.lookupStationByAbbreviation(getIntent().getStringExtra("origStation"));
+        DateFormat df = new SimpleDateFormat("hh:mma", Locale.US);
+        DateFormat df2 = new SimpleDateFormat("h:mm a", Locale.US);
+        Calendar cal = Calendar.getInstance(TimeZone.getDefault());
+        Date now = cal.getTime();
+        mTrip = mBService.generateTrip(origStation, destStation, df.format(now));
+        Log.d(TAG_DEBUG, "***** mTrip: " + mTrip);
+        mBService.updateDepartureTimes(mTrip);
+        trainList = mBService.getNextDepartureTimes(mTrip);  // if no legs found, returns an empty ArrayList
+        if (trainList.size() != 0) {
+            cal.add(Calendar.MINUTE, trainList.get(0));
+            return df2.format(cal.getTime()); // next train time
+        } else {
+            return null;
+        }
+    }
+
+//    public Leg findLeg() {
+//        // bestTrain is the train headed towards the trip destination
+//        // arriving at the origin station the soonest. For simplicity's
+//        // sake, the app will only display the trains in the same list
+//        // as bestTrain
+//        ArrayList<Legs> legs = mTrip.getLegs();
+//        int bestIndex = 0;
+//        int bestTrain = 999999;
+//        for (int i = 0; i < legs.size(); i++) {
+//            Leg michawk = legs.get(i).getLegs().get(0);
+//            if (michawk.trains != null) {
+//                int firstTrain = michawk.trains.get(0);
+//                if (firstTrain < bestTrain) {
+//                    bestTrain = firstTrain;
+//                    bestIndex = i;
+//                }
+//            }
+//        }
+//        return legs.get(bestIndex).getLegs().get(0);
+//    }
+
+    public String prepareTrains() {
+        int numTrains = trainList.size();
+        Integer[] trainArray = trainList.toArray(new Integer[numTrains]);
+        long currMillis = new java.util.Date().getTime();
+        String trainTimes = "";
+        for (int i = 0; i < trainArray.length; i++) {
+            long temp = currMillis + (long) (trainArray[i]*60000);
+            trainTimes += temp + " ";
+        }
+        return trainTimes;
     }
 
     @Override
