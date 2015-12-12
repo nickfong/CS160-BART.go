@@ -12,13 +12,13 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
 
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -68,6 +68,20 @@ public class postSelection extends Activity {
 
         String destinationSelected =  intent.getStringExtra("destName");
         destinationString.setText(destinationSelected);
+        ImageView upperBG= (ImageView) findViewById(R.id.upperBG);
+        if (destinationSelected.equals("Civic Center/UN Plaza")){
+            upperBG.setImageResource(R.drawable.civiccenter);
+        }
+        else if (destinationSelected.equals("Coliseum")){
+            System.out.println("PLEASE");
+            upperBG.setImageResource(R.drawable.coliseum);
+        }
+        else {
+            upperBG.setImageResource(R.drawable.embarcadero);
+        }
+
+        //setUpperBG(destinationSelected);
+
         String trainArrivalTime = initializeTrip(destinationSelected);
         if (trainArrivalTime != null) {
             etaString.setText("Train arrival: " + trainArrivalTime);
@@ -124,6 +138,21 @@ public class postSelection extends Activity {
         });
     }
 
+    // Sets the background image at the top of the postSelection view
+    public void setUpperBG(String destination){
+        ImageView upperBG= (ImageView) findViewById(R.id.upperBG);
+        System.out.println(destination);
+        if (destination == "Civic Center/UN Plaza"){
+            upperBG.setImageResource(R.drawable.civiccenter);
+        }
+        else if (destination == "Coliseum"){
+            System.out.println("PLEASE");
+            upperBG.setImageResource(R.drawable.coliseum);
+        }
+        else {
+            upperBG.setImageResource(R.drawable.embarcadero);
+        }
+    }
     // Initializes the trip and returns the next train's arrival time in the format h:mm
     public String initializeTrip(String dest) {
         mBService = new BartService();
