@@ -128,17 +128,112 @@ public class postSelection extends Activity {
     }
 
     // Sets the background image at the top of the postSelection view
+    // Different image for each station
     public void setUpperBG(String destination){
         ImageView upperBG= (ImageView) findViewById(R.id.upperBG);
-        if (destination.equals("Civic Center/UN Plaza")){
+        if (destination.equals("12th St. Oakland City Center")){
             upperBG.setImageResource(R.drawable.civiccenter);
+        }
+        else if (destination.equals("16th St. Mission")){
+            upperBG.setImageResource(R.drawable.coliseum);
+        }
+        else if (destination.equals("19th St. Oakland")){
+            upperBG.setImageResource(R.drawable.coliseum);
+        }
+        else if (destination.equals("24th St. Mission")){
+            upperBG.setImageResource(R.drawable.coliseum);
+        }
+        else if (destination.equals("Ashby")){
+            upperBG.setImageResource(R.drawable.coliseum);
+        }
+        else if (destination.equals("Balboa Park")){
+            upperBG.setImageResource(R.drawable.coliseum);
+        }
+        else if (destination.equals("Bay Fair")){
+            upperBG.setImageResource(R.drawable.coliseum);
+        }
+        else if (destination.equals("Castro Valley")){
+            upperBG.setImageResource(R.drawable.coliseum);
+        }
+        else if (destination.equals("Civic Center/UN Plaza")){
+            upperBG.setImageResource(R.drawable.coliseum);
         }
         else if (destination.equals("Coliseum")){
             upperBG.setImageResource(R.drawable.coliseum);
         }
+        else if (destination.equals("Colma")){
+            upperBG.setImageResource(R.drawable.coliseum);
+        }
+        else if (destination.equals("Concord")){
+            upperBG.setImageResource(R.drawable.coliseum);
+        }
+        else if (destination.equals("Daly City")){
+            upperBG.setImageResource(R.drawable.coliseum);
+        }
+        else if (destination.equals("Downtown Berkeley")){
+            upperBG.setImageResource(R.drawable.coliseum);
+        }
+        else if (destination.equals("Dublin/Pleasanton")){
+            upperBG.setImageResource(R.drawable.coliseum);
+        }
+        else if (destination.equals("El Cerrito del Norte")){
+            upperBG.setImageResource(R.drawable.coliseum);
+        }
+        else if (destination.equals("El Cerrito Plaza")){
+            upperBG.setImageResource(R.drawable.coliseum);
+        }
+        else if (destination.equals("Embarcadero")){
+            upperBG.setImageResource(R.drawable.coliseum);
+        }
+        else if (destination.equals("Fremont")){
+            upperBG.setImageResource(R.drawable.coliseum);
+        }
+        else if (destination.equals("Fruitvale")){
+            upperBG.setImageResource(R.drawable.coliseum);
+        }
+        else if (destination.equals("Glen Park")){
+            upperBG.setImageResource(R.drawable.coliseum);
+        }
+        else if (destination.equals("Hayward")){
+            upperBG.setImageResource(R.drawable.coliseum);
+        }
+        else if (destination.equals("Lafayette")){
+            upperBG.setImageResource(R.drawable.coliseum);
+        }
+        else if (destination.equals("Lake Merritt")){
+            upperBG.setImageResource(R.drawable.coliseum);
+        }
+        else if (destination.equals("MacArthur")){
+            upperBG.setImageResource(R.drawable.coliseum);
+        }
+        else if (destination.equals("Millbrae")){
+            upperBG.setImageResource(R.drawable.coliseum);
+        }
+        // Just in case a weird name appears
+        // Set default to SF waterfront image
         else {
             upperBG.setImageResource(R.drawable.embarcadero);
         }
+        /*stationMap.put("Montgomery St.", montgomery);
+        stationMap.put("North Berkeley", nBerk);
+        stationMap.put("North Concord/Martinez", nConcord);
+        stationMap.put("Oakland Int'l Airport", oakAir);
+        stationMap.put("Orinda", orinda);
+        stationMap.put("Pittsburg/Bay Point", pittsBay);
+        stationMap.put("Pleasant Hill/Contra Costa Centre", pHilCC);
+        stationMap.put("Powell St.", powell);
+        stationMap.put("Richmond", richmond);
+        stationMap.put("Rockridge", rockridge);
+        stationMap.put("San Bruno", sanBruno);
+        stationMap.put("San Francisco Int'l Airport", sfAir);
+        stationMap.put("San Leandro", sanLeandro);
+        stationMap.put("South Hayward", sHayward);
+        stationMap.put("South San Francisco", sSF);
+        stationMap.put("Union City", unionCity);
+        stationMap.put("Walnut Creek", walCreek);
+        stationMap.put("West Dublin/Pleasanton", wDublinPleas);
+        stationMap.put("West Oakland", wOak); */
+
     }
     // Initializes the trip and returns the next train's arrival time in the format h:mm
     public String initializeTrip(String dest) {
