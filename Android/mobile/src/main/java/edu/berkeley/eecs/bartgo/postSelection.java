@@ -68,19 +68,8 @@ public class postSelection extends Activity {
 
         String destinationSelected =  intent.getStringExtra("destName");
         destinationString.setText(destinationSelected);
-        ImageView upperBG= (ImageView) findViewById(R.id.upperBG);
-        if (destinationSelected.equals("Civic Center/UN Plaza")){
-            upperBG.setImageResource(R.drawable.civiccenter);
-        }
-        else if (destinationSelected.equals("Coliseum")){
-            System.out.println("PLEASE");
-            upperBG.setImageResource(R.drawable.coliseum);
-        }
-        else {
-            upperBG.setImageResource(R.drawable.embarcadero);
-        }
 
-        //setUpperBG(destinationSelected);
+        setUpperBG(destinationSelected);
 
         String trainArrivalTime = initializeTrip(destinationSelected);
         if (trainArrivalTime != null) {
@@ -141,12 +130,10 @@ public class postSelection extends Activity {
     // Sets the background image at the top of the postSelection view
     public void setUpperBG(String destination){
         ImageView upperBG= (ImageView) findViewById(R.id.upperBG);
-        System.out.println(destination);
-        if (destination == "Civic Center/UN Plaza"){
+        if (destination.equals("Civic Center/UN Plaza")){
             upperBG.setImageResource(R.drawable.civiccenter);
         }
-        else if (destination == "Coliseum"){
-            System.out.println("PLEASE");
+        else if (destination.equals("Coliseum")){
             upperBG.setImageResource(R.drawable.coliseum);
         }
         else {
