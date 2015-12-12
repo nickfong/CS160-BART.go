@@ -8,6 +8,7 @@ import android.content.ServiceConnection;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.location.Location;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.view.LayoutInflater;
@@ -25,6 +26,8 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
@@ -33,6 +36,7 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.wearable.Wearable;
 
 import java.text.DateFormat;
 import java.text.DecimalFormat;
@@ -56,6 +60,8 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
     static final String orange = "#FB9D50";
     static final String blue = "#335E7F";
     static final String grey = "#BCD0D1";
+    GoogleApiClient mApiClient;
+    Station originStation;
 
     BartService mBService;
     boolean mBound = false;
@@ -92,6 +98,30 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
         window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
         window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
         window.setStatusBarColor(Color.parseColor("#1e2a37"));
+
+        mApiClient = new GoogleApiClient.Builder( this )
+                .addApi( Wearable.API )
+                .addApi(LocationServices.API)
+                .addConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks() {
+                    @Override
+                    public void onConnected(Bundle connectionHint) {
+                        Location mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
+                                mApiClient);
+                        if (mLastLocation != null) {
+                            setOrigin(mLastLocation.getLatitude(), mLastLocation.getLongitude());
+                        }
+                    }
+
+                    @Override
+                    public void onConnectionSuspended(int cause) {
+                    }
+                })
+                .build();
+        mApiClient.connect();
+        // Query for navigation if toggle switch was checked.
+        // Else, notice that the navInstructions ArrayList remains null.
+        // As such, a null check on it can also be used to determine whether or not
+        //   navigation has been requested.
 
         // Capturing UI Views
         final ListView listView = (ListView) findViewById(R.id.listView);
@@ -142,8 +172,8 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
                 Double destLat = destLatLng.latitude;
                 Double destLng = destLatLng.longitude;
                 // Dummy origin data
-                Double origLat = 37.875173;
-                Double origLng = -122.260172;
+                Double origLat = Double.parseDouble(originStation.getLatitude());
+                Double origLng = Double.parseDouble(originStation.getLongitude());
 
 //                // Prepare extras from data (ie. the selected station)
 //                Double destLat = Double.parseDouble(mBService.lookupStationByName(dest).getLatitude());
@@ -161,7 +191,7 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
                 postSelection.putExtra("destLng", destLng);
                 postSelection.putExtra("origLat", origLat);
                 postSelection.putExtra("origLng", origLng);
-
+                postSelection.putExtra("origStation", originStation.getAbbreviation());
                 startActivityForResult(postSelection, 1);
             }
         });
@@ -297,7 +327,12 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
 
     public String generateSnippet(String dest) {
         Station destStation = mBService.lookupStationByName(dest);
-        Station origStation = mBService.lookupStationByAbbreviation("DBRK"); // Downtown Berkeley placeholder
+        Station origStation;
+        if (originStation != null) {
+            origStation = originStation;
+        } else {
+            origStation = mBService.lookupStationByAbbreviation("DBRK");
+        }
         DateFormat df = new SimpleDateFormat("hh:mma", Locale.US);
         Date now = Calendar.getInstance(TimeZone.getDefault()).getTime();
         Trip mTrip = mBService.generateTrip(origStation, destStation, df.format(now));
@@ -311,7 +346,29 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
         return mSnippet;
     }
 
+    // Sets origStation to be the nearest station
+    public void setOrigin(double latitude, double longitude) {
+        Location userLoc = new Location("User");
+        userLoc.setLatitude(latitude);
+        userLoc.setLongitude(longitude);
+        Set<Map.Entry<String, LatLng>> entries = stationLatLngMap.entrySet();
+        Iterator<Map.Entry<String, LatLng>> iter = entries.iterator();
+        Double bestDist = Double.MAX_VALUE;
 
+        while (iter.hasNext()) {
+            Map.Entry<String, LatLng> entry = iter.next();
+            LatLng val = entry.getValue();
+            String stationName = entry.getKey();
+            Location stationLoc = new Location("Station");
+            stationLoc.setLatitude(val.latitude);
+            stationLoc.setLongitude(val.longitude);
+            Double currDist = (double) userLoc.distanceTo(stationLoc);
+            if (currDist < bestDist) {
+                currDist = bestDist;
+                originStation = mBService.lookupStationByName(entry.getKey());
+            }
+        }
+    }
 
 
 
@@ -385,9 +442,9 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
                     stationKey = stationKey.substring(0, len - 5);
                     LatLng stationLatLng = getStationLatLng(stationKey);
 
-                    // Dummy origin data
-                    Double origLat = 37.875173;
-                    Double origLng = -122.260172;
+                    // Origin data
+                    Double origLat = Double.parseDouble(originStation.getLatitude());
+                    Double origLng = Double.parseDouble(originStation.getLongitude());
                     // Dest data
                     Double destLat = stationLatLng.latitude;
                     Double destLng = stationLatLng.longitude;
@@ -398,7 +455,7 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
                     postSelectionIntent.putExtra("destLat", destLat);
                     postSelectionIntent.putExtra("destLng", destLng);
                     postSelectionIntent.putExtra("destName", stationKey);
-
+                    postSelectionIntent.putExtra("origStation", originStation.getAbbreviation());
                     startActivity(postSelectionIntent);
 
                 }

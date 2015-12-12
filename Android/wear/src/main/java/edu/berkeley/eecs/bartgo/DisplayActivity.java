@@ -50,7 +50,12 @@ public class DisplayActivity extends WearableActivity {
                 mPacingView = (PacingView) stub.findViewById(R.id.pacingView);
                 long currMillis = new java.util.Date().getTime();
                 Intent intent = getIntent();
-                String trainTimes = intent.getStringExtra("start");
+                String fullMessage = intent.getStringExtra("start");
+                String trainTimes = fullMessage.substring(0, fullMessage.length()-1);
+                char navSwitch = fullMessage.charAt(fullMessage.length()-1);
+                if (navSwitch == '1') {
+                    navEnabled = true;
+                }
                 String[] bartStringTimes = trainTimes.split(" ");
                 int numTrains = bartStringTimes.length;
                 long[] bartTimes = new long[numTrains];

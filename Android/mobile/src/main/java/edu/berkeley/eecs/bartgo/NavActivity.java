@@ -47,7 +47,6 @@ public class NavActivity extends Activity {
     private double trainLat;
     private double trainLong; // Ditto
 //    private double prevDist = 0;
-    private long[] bartTimes;
     private final String REFRESH_DATA = "/refresh_data";
     private final String NEW_TRAINS = "/new_trains";
     private final int fetchInterval = 5000; // Update interval in milliseconds
@@ -148,18 +147,34 @@ public class NavActivity extends Activity {
 
     // Used to initialize the watch interaction.
     public void initialize(String trains) {
+        if (navInstructions != null) {
+            trains += "1";
+        } else {
+            trains += "0";
+        }
         sendMessage(NEW_TRAINS, trains);
     }
 
+//    public double getDistance(Double latitude, Double longitude) {
+//        double trainLat2 = Math.toRadians(trainLat);
+//        double currLat2 = Math.toRadians(latitude);
+//        double deltaLong = Math.toRadians(trainLong - longitude);
+//        double deltaLat = Math.toRadians(trainLat - latitude);
+//        double radius = 6371000;
+//        double a = Math.sin(deltaLat/2) * Math.sin(deltaLat/2) + Math.cos(currLat2) * Math.cos(trainLat2) * Math.sin(deltaLong/2) * Math.sin(deltaLong/2);
+//        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+//        return radius * c;
+//    }
+
+    // Returns distance to BART station in meters
     public double getDistance(Double latitude, Double longitude) {
-        double trainLat2 = Math.toRadians(trainLat);
-        double currLat2 = Math.toRadians(latitude);
-        double deltaLong = Math.toRadians(trainLong - longitude);
-        double deltaLat = Math.toRadians(trainLat - latitude);
-        double radius = 6371000;
-        double a = Math.sin(deltaLat/2) * Math.sin(deltaLat/2) + Math.cos(currLat2) * Math.cos(trainLat2) * Math.sin(deltaLong/2) * Math.sin(deltaLong/2);
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        return radius * c;
+        Location stationLoc = new Location("Station");
+        stationLoc.setLatitude(trainLat);
+        stationLoc.setLongitude(trainLong);
+        Location userLoc = new Location("User");
+        userLoc.setLatitude(latitude);
+        userLoc.setLongitude(longitude);
+        return (double) userLoc.distanceTo(stationLoc);
     }
 
     @Override

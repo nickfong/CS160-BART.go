@@ -279,7 +279,7 @@ public class postSelection extends Activity {
     public String initializeTrip(String dest) {
         mBService = new BartService();
         Station destStation = mBService.lookupStationByName(dest);
-        Station origStation = mBService.lookupStationByAbbreviation("DBRK"); // Downtown Berkeley placeholder
+        Station origStation = mBService.lookupStationByAbbreviation(getIntent().getStringExtra("origStation"));
         DateFormat df = new SimpleDateFormat("hh:mma", Locale.US);
         DateFormat df2 = new SimpleDateFormat("h:mm a", Locale.US);
         Calendar cal = Calendar.getInstance(TimeZone.getDefault());
