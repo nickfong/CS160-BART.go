@@ -364,7 +364,7 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
             stationLoc.setLongitude(val.longitude);
             Double currDist = (double) userLoc.distanceTo(stationLoc);
             if (currDist < bestDist) {
-                currDist = bestDist;
+                bestDist = currDist;
                 originStation = mBService.lookupStationByName(entry.getKey());
             }
         }
