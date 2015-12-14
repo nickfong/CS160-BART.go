@@ -131,147 +131,147 @@ public class postSelection extends Activity {
     // Different image for each station
 
     public void setUpperBG(String destination){
-        ImageView upperBG= (ImageView) findViewById(R.id.upperBG);
+        ImageView upperBG = (ImageView) findViewById(R.id.upperBG);
 
-        if (destination.equals("12th St. Oakland City Center")){
-            upperBG.setImageResource(R.drawable.twelvestoakland);
-        }
-        else if (destination.equals("16th St. Mission")){
-            upperBG.setImageResource(R.drawable.embarcadero);
-        }
-        else if (destination.equals("19th St. Oakland")){
-            upperBG.setImageResource(R.drawable.nineteenoak);
-        }
-        else if (destination.equals("24th St. Mission")){
-            upperBG.setImageResource(R.drawable.twentyfourmission);
-        }
-        else if (destination.equals("Ashby")){
-            upperBG.setImageResource(R.drawable.ashby);
-        }
-        else if (destination.equals("Balboa Park")){
-            upperBG.setImageResource(R.drawable.balboapark);
-        }
-        else if (destination.equals("Bay Fair")){
-            upperBG.setImageResource(R.drawable.bayfair);
-        }
-        else if (destination.equals("Castro Valley")){
-            upperBG.setImageResource(R.drawable.castrovalley);
-        }
-        else if (destination.equals("Civic Center/UN Plaza")){
-            upperBG.setImageResource(R.drawable.civiccenter);
-        }
-        else if (destination.equals("Coliseum")){
-            upperBG.setImageResource(R.drawable.coliseum);
-        }
-        else if (destination.equals("Colma")){
-            upperBG.setImageResource(R.drawable.colma);
-        }
-        else if (destination.equals("Concord")){
-            upperBG.setImageResource(R.drawable.concord);
-        }
-        else if (destination.equals("Daly City")){
-            upperBG.setImageResource(R.drawable.dalycity);
-        }
-        else if (destination.equals("Downtown Berkeley")){
-            upperBG.setImageResource(R.drawable.downtownberk);
-        }
-        else if (destination.equals("Dublin/Pleasanton")){
-            upperBG.setImageResource(R.drawable.pleasanton);
-        }
-        else if (destination.equals("El Cerrito del Norte")){
-            upperBG.setImageResource(R.drawable.elcerritodelnorte);
-        }
-        else if (destination.equals("El Cerrito Plaza")){
-            upperBG.setImageResource(R.drawable.elcerritoplaza);
-        }
-        else if (destination.equals("Embarcadero")){
-            upperBG.setImageResource(R.drawable.embarcadero);
-        }
-        else if (destination.equals("Fremont")){
-            upperBG.setImageResource(R.drawable.fremont);
-        }
-        else if (destination.equals("Fruitvale")){
-            upperBG.setImageResource(R.drawable.fruitvale);
-        }
-        else if (destination.equals("Glen Park")){
-            upperBG.setImageResource(R.drawable.glenpark);
-        }
-        else if (destination.equals("Hayward")){
-            upperBG.setImageResource(R.drawable.hayward);
-        }
-        else if (destination.equals("Lafayette")){
-            upperBG.setImageResource(R.drawable.lafayette);
-        }
-        else if (destination.equals("Lake Merritt")){
-            upperBG.setImageResource(R.drawable.lakemerritt);
-        }
-        else if (destination.equals("MacArthur")){
-            upperBG.setImageResource(R.drawable.macarthur);
-        }
-        else if (destination.equals("Millbrae")){
-            upperBG.setImageResource(R.drawable.millbrae);
-        }
-        else if (destination.equals("Montgomery St.")){
-            upperBG.setImageResource(R.drawable.montgomery);
-        }
-        else if (destination.equals("North Berkeley")){
-            upperBG.setImageResource(R.drawable.northberk);
-        }
-        else if (destination.equals("North Concord/Martinez")){
-            upperBG.setImageResource(R.drawable.northconcord);
-        }
-        else if (destination.equals("Oakland Int'l Airport")){
-            upperBG.setImageResource(R.drawable.oakairport);
-        }
-        else if (destination.equals("Orinda")){
-            upperBG.setImageResource(R.drawable.orinda);
-        }
-        else if (destination.equals("Pittsburg/Bay Point")){
-            upperBG.setImageResource(R.drawable.pbaypoint);
-        }
-        else if (destination.equals("Pleasant Hill/Contra Costa Centre")){
-            upperBG.setImageResource(R.drawable.pleasanthill);
-        }
-        else if (destination.equals("Powell St.")){
-            upperBG.setImageResource(R.drawable.powell);
-        }
-        else if (destination.equals("Richmond")){
-            upperBG.setImageResource(R.drawable.embarcadero);
-        }
-        else if (destination.equals("Rockridge")){
-            upperBG.setImageResource(R.drawable.rockridge);
-        }
-        else if (destination.equals("San Bruno")){
-            upperBG.setImageResource(R.drawable.embarcadero);
-        }
-        else if (destination.equals("San Francisco Int'l Airport")){
-            upperBG.setImageResource(R.drawable.sfo);
-        }
-        else if (destination.equals("San Leandro")){
-            upperBG.setImageResource(R.drawable.sanleandro);
-        }
-        else if (destination.equals("South Hayward")){
-            upperBG.setImageResource(R.drawable.hayward);
-        }
-        else if (destination.equals("South San Francisco")){
-            upperBG.setImageResource(R.drawable.southsf);
-        }
-        else if (destination.equals("Union City")){
-            upperBG.setImageResource(R.drawable.embarcadero);
-        }
-        else if (destination.equals("Walnut Creek")){
-            upperBG.setImageResource(R.drawable.walnutcreek);
-        }
-        else if (destination.equals("West Dublin/Pleasanton")){
-            upperBG.setImageResource(R.drawable.embarcadero);
-        }
-        else if (destination.equals("West Oakland")){
-            upperBG.setImageResource(R.drawable.westoak);
-        }
-        // Just in case a weird name appears
-        // Set default to SF waterfront image
-        else {
-            upperBG.setImageResource(R.drawable.embarcadero);
+        switch(destation) {
+            case "12th St. Oakland City Center":
+                upperBG.setImageResource(R.drawable.twelvestoakland);
+                break;
+            case "16th St. Mission":
+                upperBG.setImageResource(R.drawable.embarcadero);
+                break;
+            case "19th St. Oakland":
+                upperBG.setImageResource(R.drawable.nineteenoak);
+                break;
+            case "24th St. Mission":
+                upperBG.setImageResource(R.drawable.twentyfourmission);
+                break;
+            case "Ashby":
+                upperBG.setImageResource(R.drawable.ashby);
+                break;
+            case "Balboa Park":
+                upperBG.setImageResource(R.drawable.balboapark);
+                break;
+            case "Bay Fair":
+                upperBG.setImageResource(R.drawable.bayfair);
+                break;
+            case "Castro Valley":
+                upperBG.setImageResource(R.drawable.castrovalley);
+                break;
+            case "Civic Center/UN Plaza":
+                upperBG.setImageResource(R.drawable.civiccenter);
+                break;
+            case "Coliseum":
+                upperBG.setImageResource(R.drawable.coliseum);
+                break;
+            case "Colma":
+                upperBG.setImageResource(R.drawable.colma);
+                break;
+            case "Concord":
+                upperBG.setImageResource(R.drawable.concord);
+                break;
+            case "Daly City":
+                upperBG.setImageResource(R.drawable.dalycity);
+                break;
+            case "Downtown Berkeley":
+                upperBG.setImageResource(R.drawable.downtownberk);
+                break;
+            case "Dublin/Pleasanton":
+                upperBG.setImageResource(R.drawable.pleasanton);
+                break;
+            case "El Cerrito del Norte":
+                upperBG.setImageResource(R.drawable.elcerritodelnorte);
+                break;
+            case "El Cerrito Plaza":
+                upperBG.setImageResource(R.drawable.elcerritoplaza);
+                break;
+            case "Embarcadero":
+                upperBG.setImageResource(R.drawable.embarcadero);
+                break;
+            case "Fremont":
+                upperBG.setImageResource(R.drawable.fremont);
+                break;
+            case "Fruitvale":
+                upperBG.setImageResource(R.drawable.fruitvale);
+                break;
+            case "Glen Park":
+                upperBG.setImageResource(R.drawable.glenpark);
+                break;
+            case "Hayward":
+                upperBG.setImageResource(R.drawable.hayward);
+                break;
+            case "Lafayette":
+                upperBG.setImageResource(R.drawable.lafayette);
+                break;
+            case "Lake Merritt":
+                upperBG.setImageResource(R.drawable.lakemerritt);
+                break;
+            case "MacArthur":
+                upperBG.setImageResource(R.drawable.macarthur);
+                break;
+            case "Millbrae":
+                upperBG.setImageResource(R.drawable.millbrae);
+                break;
+            case "Montgomery St.":
+                upperBG.setImageResource(R.drawable.montgomery);
+                break;
+            case "North Berkeley":
+                upperBG.setImageResource(R.drawable.northberk);
+                break;
+            case "North Concord/Martinez":
+                upperBG.setImageResource(R.drawable.northconcord);
+                break;
+            case "Oakland Int'l Airport":
+                upperBG.setImageResource(R.drawable.oakairport);
+                break;
+            case "Orinda":
+                upperBG.setImageResource(R.drawable.orinda);
+                break;
+            case "Pittsburg/Bay Point":
+                upperBG.setImageResource(R.drawable.pbaypoint);
+                break;
+            case "Pleasant Hill/Contra Costa Centre":
+                upperBG.setImageResource(R.drawable.pleasanthill);
+                break;
+            case "Powell St.":
+                upperBG.setImageResource(R.drawable.powell);
+                break;
+            case "Richmond":
+                upperBG.setImageResource(R.drawable.embarcadero);
+                break;
+            case "Rockridge":
+                upperBG.setImageResource(R.drawable.rockridge);
+                break;
+            case "San Bruno":
+                upperBG.setImageResource(R.drawable.embarcadero);
+                break;
+            case "San Francisco Int'l Airport":
+                upperBG.setImageResource(R.drawable.sfo);
+                break;
+            case "San Leandro":
+                upperBG.setImageResource(R.drawable.sanleandro);
+                break;
+            case "South Hayward":
+                upperBG.setImageResource(R.drawable.hayward);
+                break;
+            case "South San Francisco":
+                upperBG.setImageResource(R.drawable.southsf);
+                break;
+            case "Union City":
+                upperBG.setImageResource(R.drawable.embarcadero);
+                break;
+            case "Walnut Creek":
+                upperBG.setImageResource(R.drawable.walnutcreek);
+                break;
+            case "West Dublin/Pleasanton":
+                upperBG.setImageResource(R.drawable.embarcadero);
+                break;
+            case "West Oakland":
+                upperBG.setImageResource(R.drawable.westoak);
+                break;
+            default:
+                upperBG.setImageResource(R.drawable.embarcadero);
+                break;
         }
 
     }
