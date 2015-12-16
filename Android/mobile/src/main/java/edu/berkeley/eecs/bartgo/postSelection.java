@@ -133,7 +133,7 @@ public class postSelection extends Activity {
     public void setUpperBG(String destination){
         ImageView upperBG = (ImageView) findViewById(R.id.upperBG);
 
-        switch(destation) {
+        switch(destination) {
             case "12th St. Oakland City Center":
                 upperBG.setImageResource(R.drawable.twelvestoakland);
                 break;
