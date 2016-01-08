@@ -19,7 +19,7 @@
 
     <string name="arriving_in">Arriving in</string>
     <string name="arriving_units">minutes</string>
-
+    
   <!--
   Light theme -->
     <color name="blue_curr">#335E7F</color>
