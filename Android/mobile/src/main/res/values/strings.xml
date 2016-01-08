@@ -19,12 +19,9 @@
 
     <string name="arriving_in">Arriving in</string>
     <string name="arriving_units">minutes</string>
-
-    <!--<string name="google_api_android_key">AIzaSyDBi8DUOIlJUouoNL8sgrIluGb30gBr6K8</string>-->
-
-
+    
   <!--
-    Light theme -->
+  Light theme -->
     <color name="blue_curr">#335E7F</color>
     <color name="orange_curr">#FB9D50</color>
     <color name="grey_curr">#BCD0D1</color>
@@ -37,9 +34,5 @@
     <color name="red_curr">#277F72</color>
     <color name="yellow_curr">#C7A63F</color>
     <color name="green_curr">#277F72</color>
-
-
   -->
-
-
 </resources>
