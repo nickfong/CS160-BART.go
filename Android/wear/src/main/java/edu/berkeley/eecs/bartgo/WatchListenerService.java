@@ -35,18 +35,28 @@ public class WatchListenerService extends WearableListenerService {
 
     @Override
     public void onMessageReceived(MessageEvent messageEvent) {
+        // If a REFRESH_DATA (updated user eta) message is received
         if( messageEvent.getPath().equalsIgnoreCase( REFRESH_DATA ) ) {
+            // Extract message data
             String value = new String(messageEvent.getData(), StandardCharsets.UTF_8);
+            // Create an intent with message data as an extra.
             Intent i = new Intent("refresh");
             i.putExtra("msg", value);
+            // Broadcast intent (supposedly to the BroadcastReceiver in DisplayActivity...?).
             sendBroadcast(i);
+        // Else if a NEW_TRAINS (updated train eta) message is received
         } else if (messageEvent.getPath().equalsIgnoreCase( NEW_TRAINS)) {
+            // Broadcast a "close" intent.  (** Dunno why...)
             sendBroadcast(new Intent("close"));
+            // Extract message data
             String value = new String(messageEvent.getData(), StandardCharsets.UTF_8);
+            // Vibrate watch for 500 millis.
             Vibrator v = (Vibrator) getSystemService(VIBRATOR_SERVICE);
             v.vibrate(500);
+            // Prepare intent to launch display activity.
             Intent intent = new Intent(this, DisplayActivity.class );
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            // Add intent extra with message data.
             intent.putExtra("start", value);
             startActivity(intent);
         } else {

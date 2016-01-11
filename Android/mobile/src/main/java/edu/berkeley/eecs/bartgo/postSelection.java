@@ -335,6 +335,8 @@ public class postSelection extends Activity {
 //        return legs.get(bestIndex).getLegs().get(0);
 //    }
 
+    // Converts a list of train times (in minutes, as integers) to a String
+    // with time delimited by spaces (where each time is in millis).
     public String prepareTrains() {
         int numTrains = trainList.size();
         Integer[] trainArray = trainList.toArray(new Integer[numTrains]);

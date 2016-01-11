@@ -148,12 +148,14 @@ public class DisplayActivity extends WearableActivity {
         super.onResume();
         IntentFilter intentFilter = new IntentFilter("refresh");
 
+        // A BroadcastReceiver listening for user eta updates.
         mReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 //extract our message from intent
                 String receivedMsg = intent.getStringExtra("msg");
                 long eta = Long.parseLong(receivedMsg, 10);
+                // vibrate if updating arrival time with new eta triggered a background color change.
                 if (mPacingView.updateArrivalTime(eta)) {
                     mVibrator.vibrate(mVibrationPattern, -1);
                     Log.d("DisplayActivity", "WATCH VIBRATED");

@@ -101,9 +101,12 @@ public class NavActivity extends Activity {
                             currLat = mLastLocation.getLatitude();
                             currLong = mLastLocation.getLongitude();
                         }
+                        // Fetches intent from postSelection to retrieve the string of train times in millis
                         String trainTimes = getIntent().getStringExtra("trains");
+                        // Initiates watch message interaction.  Sends string of train times to watch
                         initialize(trainTimes);
                         handler.removeCallbacks(updater);
+                        // periodically sends user eta to station to watch every 5 seconds.
                         updater.run();
                     }
 
@@ -143,10 +146,12 @@ public class NavActivity extends Activity {
 
         @Override
         public void run() {
+            // Retrieve last location's lat and lng
             Location mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mApiClient);
             if (mLastLocation != null) {
                 currLat = mLastLocation.getLatitude();
                 currLong = mLastLocation.getLongitude();
+                // Calcualate distance to nearest BART station
                 double distance = getDistance(currLat, currLong);
 //                double pace = (prevDist - distance) / fetchInterval;
 //                double millisRemaining = distance / pace;
@@ -154,16 +159,20 @@ public class NavActivity extends Activity {
 //                if (millisRemaining > 0) {
 //                    arrival += (long) millisRemaining;
 //                } else {
-                    arrival += (long) (distance / 0.0014);
+                    // arrival is the project arrival time at the station in millis assuming an average walking speed
+                    arrival += (long) (distance / 0.0014); // avg walking velocity == 0.0014 m / ms
 //                }
+                // a string of the arrival time is sent to wear
                 sendMessage(REFRESH_DATA, arrival + "");
 //                prevDist = distance;
             }
+            // controls looping after specified delay interval.
             handler.postDelayed(updater, fetchInterval);
         }
     };
 
     // Used to initialize the watch interaction.
+    // Checks if navInstructions exist, and appends to message to be sent.
     public void initialize(String trains) {
         if (navInstructions != null) {
             trains += "1";
@@ -185,6 +194,8 @@ public class NavActivity extends Activity {
 //    }
 
     // Returns distance to BART station in meters
+    // where the BART station (lat, lng) == (trainLat, trainLong)
+    // TODO:  fix distance calculation so that it is path-finding, not as-the-crow-flies
     public double getDistance(Double latitude, Double longitude) {
         Location stationLoc = new Location("Station");
         stationLoc.setLatitude(trainLat);
