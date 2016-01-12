@@ -36,6 +36,10 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Locale;
 
+/**
+ * An Activity class orchestrating Activity-launching and the reception of messages broadcasted
+ * from the WatchListenerService class.
+ */
 public class DisplayActivity extends WearableActivity {
     public static final String NAV_EXTRA = "NAV_DIRECTION";
     private static final long[] mVibrationPattern = {0, 500, 50, 300};
@@ -50,13 +54,21 @@ public class DisplayActivity extends WearableActivity {
 
     private boolean navEnabled = false; // @Patrick: please set this var according to Mobile's msg
 
+
+
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // OVERRIDDEN METHODS (GENERAL)
+    ////////////////////////////////////////////////////////////////////////////////
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // Set initial views
         setContentView(R.layout.activity_main);
         registerReceiver(closeCurrent, new IntentFilter("close"));
         final WatchViewStub stub = (WatchViewStub) findViewById(R.id.watch_view_stub);
         stub.setOnLayoutInflatedListener(new WatchViewStub.OnLayoutInflatedListener() {
+            // Set layout listener, and prepare display resources
             @Override
             public void onLayoutInflated(WatchViewStub stub) {
                 mDismissOverlay = (DismissOverlayView) stub.findViewById(R.id.dismiss_overlay);
@@ -74,6 +86,8 @@ public class DisplayActivity extends WearableActivity {
                 if (navSwitch == '1') {
                     navEnabled = true;
                 }
+
+                // Prepare train times
                 String[] bartStringTimes = trainTimes.split(" ");
                 int numTrains = bartStringTimes.length;
                 long[] bartTimes = new long[numTrains];
@@ -87,8 +101,12 @@ public class DisplayActivity extends WearableActivity {
                         bartTimes[i] = Long.parseLong(bartStringTimes[i], 10);
                     }
                 }
+
+                // Set PacingView data; update PacingView UI
                 mPacingView.setDepartureTimes(bartTimes);
-                mPacingView.updateArrivalTime(currMillis + 300000); //@Patrick: still fake data here
+                mPacingView.updateArrivalTime(currMillis + 300000); // TODO: Still fake data here
+
+                // Set PacingView swipe-listener.
                 mPacingView.setOnTouchListener(new OnSwipeTouchListener(mContext) {
                     public void onSwipeBottom() {
                         int retVal = mPacingView.onSwipeDown();
@@ -120,11 +138,7 @@ public class DisplayActivity extends WearableActivity {
                         mDismissOverlay.show();
                     }
 
-                    /* --- For Patrick ---
-                     * Just put the current navigation direction into the intend and start the
-                     * navigation activity.
-                     * You need to supply the correct current direction though. (although I think
-                     * that should be handled on the mobile side) */
+                    // TODO:  Replace fake data with live directions.
                     public void onSwipeLeft() {
                         if (!navEnabled) return;
                         Intent intent = new Intent(mContext, NavigationActivity.class);
@@ -139,21 +153,25 @@ public class DisplayActivity extends WearableActivity {
                 });
             }
         });
+
+        // Fake advisory notification.
+        // TODO:  Trigger notification with genuine advisory.
         onReceiveNewAdvisory("Elevator out of service"); //example
     }
 
     @Override
     protected void onResume() {
-        // TODO Auto-generated method stub
         super.onResume();
         IntentFilter intentFilter = new IntentFilter("refresh");
 
+        // A BroadcastReceiver listening for user eta updates.
         mReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                //extract our message from intent
+                // Extract user ETA data message from intent
                 String receivedMsg = intent.getStringExtra("msg");
                 long eta = Long.parseLong(receivedMsg, 10);
+                // vibrate if updating arrival time with new eta triggered a background color change.
                 if (mPacingView.updateArrivalTime(eta)) {
                     mVibrator.vibrate(mVibrationPattern, -1);
                     Log.d("DisplayActivity", "WATCH VIBRATED");
@@ -161,15 +179,14 @@ public class DisplayActivity extends WearableActivity {
                 Log.d("Updated with new ETA ", eta + "");
             }
         };
-        //registering our receiver
+        // Register receiver
         this.registerReceiver(mReceiver, intentFilter);
     }
 
     @Override
     protected void onPause() {
-        // TODO Auto-generated method stub
         super.onPause();
-        //unregister our receiver
+        // Unregister receiver
         this.unregisterReceiver(this.mReceiver);
     }
 
@@ -179,9 +196,15 @@ public class DisplayActivity extends WearableActivity {
         unregisterReceiver(closeCurrent);
     }
 
-    /* --- For Patrick ---
-     * Once you receive a new advisory just call this method with the content of the advisory,
-     * This method would pop up a dialog alert on the UI*/
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // MESSAGE RECEPTION HELPER METHODS AND OBJECTS
+    ////////////////////////////////////////////////////////////////////////////////
+    /**
+     * When called, triggers notification dialog, containing the specified text, in the Wear UI.
+     *
+     * @param content       The String to be displayed as the advisory text.
+     */
     public void onReceiveNewAdvisory(String content) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Advisory")
@@ -195,7 +218,9 @@ public class DisplayActivity extends WearableActivity {
         dialog.show();
     }
 
-    // Allow new routes to be received during current DisplayActivity
+    /**
+     * Allows new routes to be received during the current DisplayActivity.
+     */
     private final BroadcastReceiver closeCurrent = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {

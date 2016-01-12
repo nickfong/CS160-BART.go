@@ -43,18 +43,24 @@ import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
+/**
+ * An Activity class handling the trip summary UI.  This class also allows the user to indicate
+ * preferences regarding their trip (eg. whether one would like turn-by-turn navigation enabled).
+ */
 public class postSelection extends Activity {
-    ////////////////////////////////////////////////////////////////////////////////
-    // GLOBAL VARS
-    ////////////////////////////////////////////////////////////////////////////////
     BartService mBService;
     List<Integer> trainList;
     Trip mTrip;
     String trainString;
+
     static final String TAG_DEBUG = "tag_debug";
     static final String noneRunningMsg = "None currently running.";
     static final String noneRunningMsgAbbrev = "N/A";
     static final String noneRunningMsgSchedInfo = "Trains usually run 4/6/8 AM - 1 AM\n(Weekdays/Sat./Sun. respectively)";
+
+
+
+
     ////////////////////////////////////////////////////////////////////////////////
     // OVERRIDDEN METHODS (GENERAL)
     ////////////////////////////////////////////////////////////////////////////////
@@ -82,6 +88,8 @@ public class postSelection extends Activity {
         final TextView arrivingUnits = (TextView) findViewById(R.id.arriving_units);
         final Button startButton = (Button) findViewById(R.id.startButton);
         final Switch turnByTurnSwitch = (Switch) findViewById(R.id.turnbyturnSwitch);
+
+        // Set background photo
         Intent intent = getIntent();
 
         String destinationSelected =  intent.getStringExtra("destName");
@@ -89,21 +97,28 @@ public class postSelection extends Activity {
 
         setUpperBG(destinationSelected);
 
+        // Calculate and display next train arrival ETA
         String trainArrivalTime = initializeTrip(destinationSelected);
         if (trainArrivalTime != null) {
             etaString.setText("Train arrival: " + trainArrivalTime);
         } else {
             etaString.setText("Train arrival:  " + noneRunningMsgAbbrev);
         }
+
+        // Calculate and display trip fares
         float fare = mTrip.getFare();
         DecimalFormat decim = new DecimalFormat("0.00");
         fareString.setText("One-way:  $" + decim.format(fare));
         fareString2.setText("Round-trip:  $" + decim.format(2*fare));
+
+        // Retrieve and display next train arrival
         String boundTrain = mBService.getNextDepartureDestination(mTrip);
         lineString.setText(boundTrain + " Train");
+        // If trains are currently running, display train.
         if ((trainList != null) && (trainList.size() != 0)) {
             minutesRemaining.setText(trainList.get(0) + "");
             setStartButtonListener(startButton, turnByTurnSwitch);
+        // Else inform user trains are not currently running.
         } else {
             arrivingIn.setVisibility(View.INVISIBLE);
             minutesRemaining.setText(noneRunningMsg);
@@ -114,10 +129,48 @@ public class postSelection extends Activity {
             startButton.setClickable(false);
             startButton.setText(noneRunningMsgSchedInfo);
         }
+
+        //Prepare train ETAs to send to watch
         trainString = prepareTrains();
 
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_post_selection, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_settings) {
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+
+
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // UI GENERATION HELPER METHODS
+    ////////////////////////////////////////////////////////////////////////////////
+    /**
+     * Initializes "START" button listener, preparing intents according based on
+     * whether turn-by-turn navigation was requested.
+     *
+     * @param startButton       The UI's "START" button.  This does not change.
+     * @param turnByTurnSwitch  The UI's toggle switch indicating a request for
+     *                          turn-by-turn navigation.
+     */
     public void setStartButtonListener(final Button startButton, final Switch turnByTurnSwitch) {
         // Create OnClickListener for StartButton
         startButton.setOnClickListener(new View.OnClickListener() {
@@ -145,9 +198,11 @@ public class postSelection extends Activity {
         });
     }
 
-    // Sets the background image at the top of the postSelection view
-    // Different image for each station
-
+    /**
+     * Sets the header's background image based on the specified station.
+     *
+     * @param destination   The name of the destination station.
+     */
     public void setUpperBG(String destination){
         ImageView upperBG = (ImageView) findViewById(R.id.upperBG);
 
@@ -293,17 +348,37 @@ public class postSelection extends Activity {
         }
 
     }
+
+
+
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // TRIP GENERATION/PREPARATION HELPER METHODS
+    ////////////////////////////////////////////////////////////////////////////////
+    /**
+     * Initializes trip to the specified destination station, and returns
+     * the next train's arrival time.
+     * @param dest      The destination station's name.
+     * @return          The next train's arrival time, in the format (h)h:mm.
+     */
     // Initializes the trip and returns the next train's arrival time in the format h:mm
     public String initializeTrip(String dest) {
         mBService = new BartService();
+        // Retrieve dest/orig stations
         Station destStation = mBService.lookupStationByName(dest);
         Station origStation = mBService.lookupStationByAbbreviation(getIntent().getStringExtra("origStation"));
+
+        // Generate current time and appropriate formatters
         DateFormat df = new SimpleDateFormat("hh:mma", Locale.US);
         DateFormat df2 = new SimpleDateFormat("h:mm a", Locale.US);
         Calendar cal = Calendar.getInstance(TimeZone.getDefault());
         Date now = cal.getTime();
+
+        // Generate trip
         mTrip = mBService.generateTrip(origStation, destStation, df.format(now));
         Log.d(TAG_DEBUG, "***** mTrip: " + mTrip);
+
+        // Update BART service, and retrieve next departure time.
         mBService.updateDepartureTimes(mTrip);
         trainList = mBService.getNextDepartureTimes(mTrip);  // if no legs found, returns an empty ArrayList
         if (trainList.size() != 0) {
@@ -335,6 +410,17 @@ public class postSelection extends Activity {
 //        return legs.get(bestIndex).getLegs().get(0);
 //    }
 
+    /**
+     * Converts the global List<Integer>, trainList, into a String containing
+     * each element of said list delimited by spaces.
+     *
+     * A semantic note:  the elements of the List<Integer> are train arrival times
+     * in minutes from the current time, whereas the returned String is train
+     * arrival times in millis since the Unix epoch.
+     *
+     * @return      A String of train arrival times.  (See above semantic note
+     *              for more detail.)
+     */
     public String prepareTrains() {
         int numTrains = trainList.size();
         Integer[] trainArray = trainList.toArray(new Integer[numTrains]);
@@ -345,27 +431,5 @@ public class postSelection extends Activity {
             trainTimes += temp + " ";
         }
         return trainTimes;
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_post_selection, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 }
