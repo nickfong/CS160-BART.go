@@ -51,24 +51,31 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 
+/**
+ * An Activity classes which interfaces with the Google Maps Directions API to generate
+ * turn-by-turn naviagtion directions.
+ *
+ * This class also handles Mobile-side processes in the Mobile-Wear communication framework,
+ * as the last activity to be launched before transitioning to Wear.
+ */
 public class NavActivity extends Activity {
-
-    ////////////////////////////////////////////////////////////////////////////////
-    //GLOBAL VARS
-    ////////////////////////////////////////////////////////////////////////////////
     protected final static String TAG_DEBUG = "tag_debug";  // For Log.d()
     private Intent i;
     public ArrayList<NavInstruction> navInstructions = null;
     private GoogleApiClient mApiClient;
+
     private double currLat;
     private double currLong;
     private double trainLat;
-    private double trainLong; // Ditto
-//    private double prevDist = 0;
+    private double trainLong;
+
     private final String REFRESH_DATA = "/refresh_data";
     private final String NEW_TRAINS = "/new_trains";
     private final int fetchInterval = 5000; // Update interval in milliseconds
     private Handler handler = new Handler();
+
+
+
 
     ////////////////////////////////////////////////////////////////////////////////
     // OVERRIDDEN METHODS (GENERAL)
@@ -128,84 +135,6 @@ public class NavActivity extends Activity {
         Log.d(TAG_DEBUG, "******* What is navInstructions?  It is " + navInstructions);
     }
 
-    private void sendMessage( final String path, final String text ) {
-        new Thread( new Runnable() {
-            @Override
-            public void run() {
-                NodeApi.GetConnectedNodesResult nodes = Wearable.NodeApi.getConnectedNodes( mApiClient ).await();
-                for(Node node : nodes.getNodes()) {
-                    MessageApi.SendMessageResult result = Wearable.MessageApi.sendMessage(
-                            mApiClient, node.getId(), path, text.getBytes() ).await();
-                }
-            }
-        }).start();
-    }
-
-    // Sends user ETA to watch based on location and distance covered within the last update interval
-    public Runnable updater = new Runnable() {
-
-        @Override
-        public void run() {
-            // Retrieve last location's lat and lng
-            Location mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mApiClient);
-            if (mLastLocation != null) {
-                currLat = mLastLocation.getLatitude();
-                currLong = mLastLocation.getLongitude();
-                // Calcualate distance to nearest BART station
-                double distance = getDistance(currLat, currLong);
-//                double pace = (prevDist - distance) / fetchInterval;
-//                double millisRemaining = distance / pace;
-                long arrival = new java.util.Date().getTime();
-//                if (millisRemaining > 0) {
-//                    arrival += (long) millisRemaining;
-//                } else {
-                    // arrival is the project arrival time at the station in millis assuming an average walking speed
-                    arrival += (long) (distance / 0.0014); // avg walking velocity == 0.0014 m / ms
-//                }
-                // a string of the arrival time is sent to wear
-                sendMessage(REFRESH_DATA, arrival + "");
-//                prevDist = distance;
-            }
-            // controls looping after specified delay interval.
-            handler.postDelayed(updater, fetchInterval);
-        }
-    };
-
-    // Used to initialize the watch interaction.
-    // Checks if navInstructions exist, and appends to message to be sent.
-    public void initialize(String trains) {
-        if (navInstructions != null) {
-            trains += "1";
-        } else {
-            trains += "0";
-        }
-        sendMessage(NEW_TRAINS, trains);
-    }
-
-//    public double getDistance(Double latitude, Double longitude) {
-//        double trainLat2 = Math.toRadians(trainLat);
-//        double currLat2 = Math.toRadians(latitude);
-//        double deltaLong = Math.toRadians(trainLong - longitude);
-//        double deltaLat = Math.toRadians(trainLat - latitude);
-//        double radius = 6371000;
-//        double a = Math.sin(deltaLat/2) * Math.sin(deltaLat/2) + Math.cos(currLat2) * Math.cos(trainLat2) * Math.sin(deltaLong/2) * Math.sin(deltaLong/2);
-//        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-//        return radius * c;
-//    }
-
-    // Returns distance to BART station in meters
-    // where the BART station (lat, lng) == (trainLat, trainLong)
-    // TODO:  fix distance calculation so that it is path-finding, not as-the-crow-flies
-    public double getDistance(Double latitude, Double longitude) {
-        Location stationLoc = new Location("Station");
-        stationLoc.setLatitude(trainLat);
-        stationLoc.setLongitude(trainLong);
-        Location userLoc = new Location("User");
-        userLoc.setLatitude(latitude);
-        userLoc.setLongitude(longitude);
-        return (double) userLoc.distanceTo(stationLoc);
-    }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -227,6 +156,9 @@ public class NavActivity extends Activity {
 
         return super.onOptionsItemSelected(item);
     }
+
+
+
 
     ////////////////////////////////////////////////////////////////////////////////
     // DIRECTIONS QUERY CLASS
@@ -289,7 +221,6 @@ public class NavActivity extends Activity {
             // Nothing special to do here.
         }
     }
-
 
 
 
@@ -387,4 +318,109 @@ public class NavActivity extends Activity {
             return;
         }
     }
+
+
+
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // MOBILE-WEAR COMMUNICATION FRAMEWORK
+    ////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * A Periodic Runnable which sends user ETA updates to the watch.  Updates are based on
+     * the user's location and distance covered within the last update interval.
+     */
+    public Runnable updater = new Runnable() {
+
+        @Override
+        public void run() {
+            // Retrieve last location's lat and lng
+            Location mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mApiClient);
+            if (mLastLocation != null) {
+                currLat = mLastLocation.getLatitude();
+                currLong = mLastLocation.getLongitude();
+                // Calcualate distance to nearest BART station
+                double distance = getDistance(currLat, currLong);
+//                double pace = (prevDist - distance) / fetchInterval;
+//                double millisRemaining = distance / pace;
+                long arrival = new java.util.Date().getTime();
+//                if (millisRemaining > 0) {
+//                    arrival += (long) millisRemaining;
+//                } else {
+                // arrival is the project arrival time at the station in millis assuming an average walking speed
+                arrival += (long) (distance / 0.0014); // avg walking velocity == 0.0014 m / ms
+//                }
+                // a string of the arrival time is sent to wear
+                sendMessage(REFRESH_DATA, arrival + "");
+//                prevDist = distance;
+            }
+            // controls looping after specified delay interval.
+            handler.postDelayed(updater, fetchInterval);
+        }
+    };
+
+    /**
+     * Sends a message to Wear with the specified path and data.
+     *
+     * @param path      The message path.
+     * @param text      The message data as a String.
+     */
+    private void sendMessage( final String path, final String text ) {
+        new Thread( new Runnable() {
+            @Override
+            public void run() {
+                NodeApi.GetConnectedNodesResult nodes = Wearable.NodeApi.getConnectedNodes( mApiClient ).await();
+                for(Node node : nodes.getNodes()) {
+                    MessageApi.SendMessageResult result = Wearable.MessageApi.sendMessage(
+                            mApiClient, node.getId(), path, text.getBytes() ).await();
+                }
+            }
+        }).start();
+    }
+
+    /**
+     * Initializes the Wear interaction.  Also checks whether turn-by-turn navigation instructions
+     * were requested, and appends this information to the train ETA update message sent.
+     *
+     * @param trains    The String of train times (in millis since the Unix epoch) to be sent
+     *                  to Wear.
+     */
+    public void initialize(String trains) {
+        if (navInstructions != null) {
+            trains += "1";
+        } else {
+            trains += "0";
+        }
+        sendMessage(NEW_TRAINS, trains);
+    }
+
+    /**
+     * Returns the distance, in meters, to the BART station nearest to the specified location.
+     *
+     * @param latitude      Latitude, as a double.
+     * @param longitude     Longitude, as a double.
+     * @return              The distance to the nearest station, in meters.
+     */
+    public double getDistance(Double latitude, Double longitude) {
+        Location stationLoc = new Location("Station");
+        stationLoc.setLatitude(trainLat);
+        stationLoc.setLongitude(trainLong);
+        Location userLoc = new Location("User");
+        userLoc.setLatitude(latitude);
+        userLoc.setLongitude(longitude);
+        return (double) userLoc.distanceTo(stationLoc);
+    }
+
+    // Deprecated getDistance method.
+        // public double getDistance(Double latitude, Double longitude) {
+        // double trainLat2 = Math.toRadians(trainLat);
+        // double currLat2 = Math.toRadians(latitude);
+        // double deltaLong = Math.toRadians(trainLong - longitude);
+        // double deltaLat = Math.toRadians(trainLat - latitude);
+        // double radius = 6371000;
+        // double a = Math.sin(deltaLat/2) * Math.sin(deltaLat/2) + Math.cos(currLat2) * Math.cos(trainLat2) * Math.sin(deltaLong/2) * Math.sin(deltaLong/2);
+        // double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        // return radius * c;
+    // }
+
 }

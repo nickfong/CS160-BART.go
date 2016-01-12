@@ -19,7 +19,11 @@
 package edu.berkeley.eecs.bartgo;
 
 /**
- * A simple class for organizing data pertinent to navigation instructions.
+ * A simple data-structure class for organizing data pertinent to turn-by-turn navigation
+ * instructions.
+ *
+ * Reference Information:
+ *
  * Each NavInstruction stores the following data as Strings:
  *      Text instruction
  *          Ex:  "Head <b>south</b> on <b>Euclid Ave</b> toward <b>Hearst Ave</b>"
@@ -59,7 +63,6 @@ public class NavInstruction {
         distance = dist;
         duration = dur;
     }
-
 
 
 

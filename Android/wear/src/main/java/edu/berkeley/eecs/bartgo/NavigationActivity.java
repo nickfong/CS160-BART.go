@@ -24,7 +24,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 /**
- * Created by Daiwei Liu on 12/1/15
+ * An Activity class handling the Wear-side turn-by-turn directions.
  */
 public class NavigationActivity extends Activity {
     private String[] directions;
@@ -34,16 +34,22 @@ public class NavigationActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // Set up UI Views
         setContentView(R.layout.activity_navigation);
         direction = (TextView) findViewById(R.id.navigationText);
+
+        // Retrieve nav instructions, and set initial display
         directions = getIntent().getStringArrayExtra(DisplayActivity.NAV_EXTRA);
         currentDirectionIndex = 0;
         direction.setText(directions[currentDirectionIndex]);
+
+        // Set up swipe listener
         direction.setOnTouchListener(new OnSwipeTouchListener(this) {
             public void onSwipeRight() {
                 finish();
             }
 
+            // Display previous direction, if available.
             public void onSwipeBottom() {
                 if (currentDirectionIndex > 0) {
                     currentDirectionIndex -= 1;
@@ -53,6 +59,7 @@ public class NavigationActivity extends Activity {
                 }
             }
 
+            // Display next direction, if available.
             public void onSwipeTop() {
                 if (currentDirectionIndex < directions.length - 1) {
                     currentDirectionIndex += 1;

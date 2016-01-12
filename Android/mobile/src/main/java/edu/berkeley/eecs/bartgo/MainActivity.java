@@ -70,10 +70,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
 
+/**
+ * An Activity class handling the Mobile station-selection UI.  This classes marries the UI with
+ * data from the BART API and various Google Maps APIs.
+ */
 public class MainActivity extends Activity implements OnMapReadyCallback {
-    ////////////////////////////////////////////////////////////////////////////////
-    // GLOBAL VARS
-    ////////////////////////////////////////////////////////////////////////////////
     //  Context c = getBaseContext();
     static final String orange = "#FB9D50";
     static final String blue = "#335E7F";
@@ -185,20 +186,12 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
                     dest = favoritesHash.get(position);
                 }
 
-                // Prepare extras from data (ie. the selected station)
+                // Prepare destination/origin extras from data (ie. the selected station)
                 LatLng destLatLng = stationLatLngMap.get(dest);
                 Double destLat = destLatLng.latitude;
                 Double destLng = destLatLng.longitude;
-                // Dummy origin data
                 Double origLat = Double.parseDouble(originStation.getLatitude());
                 Double origLng = Double.parseDouble(originStation.getLongitude());
-
-//                // Prepare extras from data (ie. the selected station)
-//                Double destLat = Double.parseDouble(mBService.lookupStationByName(dest).getLatitude());
-//                Double destLng = Double.parseDouble(mBService.lookupStationByName(dest).getLongitude());
-//                // Dummy origin data
-//                Double origLat = 37.875173;
-//                Double origLng = -122.260172;
 
                 // Create post-selection intent and put extras
                 Intent postSelection = new Intent();
@@ -297,8 +290,9 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
         Intent intent = new Intent(this, BartService.class);
         stopService(intent);
         unbindService(mConnection);
-//        ComponentName mService = startService(intent);
+        // ComponentName mService = startService(intent);
     }
+
     /** Defines callbacks for service binding, passed to bindService() */
     private ServiceConnection mConnection = new ServiceConnection() {
 
@@ -324,8 +318,6 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
      * Returns a HashMap between station names and
      * latitude-longitude coordinates.
      *
-     * TODO--INTEGRATION:  CHANGE TO ACCEPT INPUT FROM NICK'S API DATA
-     *
      * @return          A HashMap<String, LatLng> station mapping
      */
     public HashMap<String, LatLng> getStationLatLngMap() {
@@ -334,15 +326,18 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
         for (Station s : mBService.getStations()) {
             Double sLat = Double.parseDouble(s.getLatitude());
             Double sLng = Double.parseDouble(s.getLongitude());
-//            Log.d(TAG_DEBUG, "***** meeeeeep!");
             stationMap.put(s.getName(), new LatLng(sLat, sLng));
         }
-//        Log.d(TAG_DEBUG, "*****" + stationMap.get("12th St. Oakland City Center"));
-//        Log.d(TAG_DEBUG, "*****" + stationMap.get("West Oakland"));
-
         return stationMap;
     }
 
+    /**
+     * Returns a String containing trip fares to be displayed as the snippet for
+     * the map maker of the specified destination station.
+     *
+     * @param dest      The name of the destination station.
+     * @return          The String to display.
+     */
     public String generateSnippet(String dest) {
         Station destStation = mBService.lookupStationByName(dest);
         Station origStation;
@@ -364,7 +359,13 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
         return mSnippet;
     }
 
-    // Sets origStation to be the nearest station
+    /**
+     * Sets the global Station object, originStation, to the station nearest
+     * to the specified latitude, longitude pair.
+     *
+     * @param latitude      Latitude, as a double.
+     * @param longitude     Longitude, as a double.
+     */
     public void setOrigin(double latitude, double longitude) {
         Location userLoc = new Location("User");
         userLoc.setLatitude(latitude);
@@ -390,15 +391,16 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
 
 
 
+
     ////////////////////////////////////////////////////////////////////////////////
     // MAP GENERATION
     ////////////////////////////////////////////////////////////////////////////////
     /**
      * Generates a scaled bitmap icon  from an R.drawable element.
      *
-     * @param   resId   The image id to be used as the icon.  Of the form
+     * @param resId     The image id to be used as the icon.  Of the form
      *                  "R.drawable.image_name"
-     * @param   scale   The "down-scaling" factor.  Ie. width and height are scaled
+     * @param scale     The "down-scaling" factor.  Ie. width and height are scaled
      *                  by a factor of 1 / scale.
      * @return          The scaled bitmap.
      */
@@ -413,15 +415,10 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
      * Tap: display station name and station details.
      * Long-Tap: launch turn-by-turn navigation (NavActivity) to selected station.
      *
-     * TODO--INTEGRATION:  REPLACE DUMMY STATION DETAILS SNIPPET WITH ACTUAL INFO FROM NICK'S API CALLS
-     * TODO--INTEGRATION:  REPLACE DUMMY ORIGIN LAT/LNG DATA (SEE onMarkerDragStart())
-     * TODO                WITH ACTUAL CURRENT POS CALCULATED IN PATRICK'S MAIN ACTIVITY.
-     *
-     * @param   map     The GoogleMap instance to display.
+     * @param map       The GoogleMap instance to display.
      */
     @Override
     public void onMapReady(GoogleMap map) {
-//        Log.d(TAG_DEBUG, "***** MEEEP! MAP IS READY");
         // Set camera zoom
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(
                 new LatLng(37.804697, -122.201255), (float) 9.5));
@@ -436,8 +433,6 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
             LatLng val = entry.getValue();
             String stationName = entry.getKey();
 
-            // Log.d(TAG_DEBUG, "*****" + val);
-
             Marker mMarker = map.addMarker(new MarkerOptions()
                     .icon(BitmapDescriptorFactory.fromBitmap(generateIcon(R.drawable.marker_bartgo_logo_round, 2)))
                     .anchor(0.5f, 1.0f) /*Anchors the marker on the bottom center */
@@ -446,8 +441,7 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
                     /*.snippet("ETA:  50 min | $6.50 | $13.00")*/
                     .snippet(generateSnippet(stationName))
                     .draggable(true));
-//            Log.d(TAG_DEBUG, "***** Marker added at " + val);
-//            Log.d(TAG_DEBUG, "***** Marker added: " + mMarker);
+
             map.setOnMarkerDragListener(new GoogleMap.OnMarkerDragListener() {
                 // Simulate long-click functionality
                 @Override
@@ -495,7 +489,6 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
 
 
 
-
     ////////////////////////////////////////////////////////////////////////////////
     // MAP GENERATION:  LAT-LON RETRIEVAL                        (HELPER METHODS) //
     ////////////////////////////////////////////////////////////////////////////////
@@ -511,7 +504,7 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
     /**
      * Returns a station latitutde-longitude coordinates
      *
-     * @param   name    The station's name.
+     * @param name      The station's name.
      * @return          The station's latitude and longitude, as a LatLng.
      */
     public LatLng getStationLatLng(String name) {
@@ -521,13 +514,9 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
 
 
 
-
-
-
     ////////////////////////////////////////////////////////////////////////////////
     // MOBILE UI:  CUSTOM LIST GENERATOR
     ////////////////////////////////////////////////////////////////////////////////
-
     /**
      * A custom ArrayAdapter class for displaying stations to select from.
      */
@@ -587,15 +576,11 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
 
 
 
-
-
     ////////////////////////////////////////////////////////////////////////////////
     // MOBILE UI:  CREATION METHODS
     ////////////////////////////////////////////////////////////////////////////////
     /**
      * Generates station list with which to populate the "All Stations" tab's Spinner.
-     *
-     * TODO--INTEGRATION:  CHANGE TO ACCEPT INPUT FROM NICK'S API DATA
      */
     public void createAllStationsHash() {
         int len = stationLatLngMap.size();
@@ -605,54 +590,6 @@ public class MainActivity extends Activity implements OnMapReadyCallback {
             allStationsList.add(s.getName());
         }
 
-        /* TODO--DELETE
-        // Hard-coded station data
-        allStationsList =  new ArrayList<>(45);
-        allStationsList.add("12th St. Oakland City Center");
-        allStationsList.add("16th St. Mission");
-        allStationsList.add("19th St. Oakland");
-        allStationsList.add("24th St. Mission");
-        allStationsList.add("Ashby");
-        allStationsList.add("Balboa Park");
-        allStationsList.add("Bay Fair");
-        allStationsList.add("Castro Valley");
-        allStationsList.add("Civic Center/UN Plaza");
-        allStationsList.add("Coliseum");
-        allStationsList.add("Colma");
-        allStationsList.add("Concord");
-        allStationsList.add("Daly City");
-        allStationsList.add("Downtown Berkeley");
-        allStationsList.add("Dublin/Pleasanton");
-        allStationsList.add("El Cerrito del Norte");
-        allStationsList.add("El Cerrito Plaza");
-        allStationsList.add("Embarcadero");
-        allStationsList.add("Fremont");
-        allStationsList.add("Fruitvale");
-        allStationsList.add("Glen Park");
-        allStationsList.add("Hayward");
-        allStationsList.add("Lafayette");
-        allStationsList.add("Lake Merritt");
-        allStationsList.add("MacArthur");
-        allStationsList.add("Millbrae");
-        allStationsList.add("Montgomery St.");
-        allStationsList.add("North Berkeley");
-        allStationsList.add("North Concord/Martinez");
-        allStationsList.add("Oakland Int'l Airport");
-        allStationsList.add("Orinda");
-        allStationsList.add("Pittsburg/Bay Point");
-        allStationsList.add("Pleasant Hill/Contra Costa Centre");
-        allStationsList.add("Powell St.");
-        allStationsList.add("Richmond");
-        allStationsList.add("Rockridge");
-        allStationsList.add("San Bruno");
-        allStationsList.add("San Francisco Int'l Airport");
-        allStationsList.add("San Leandro");
-        allStationsList.add("South Hayward");
-        allStationsList.add("South San Francisco");
-        allStationsList.add("Union City");
-        allStationsList.add("Walnut Creek");
-        allStationsList.add("West Dublin/Pleasanton");
-        allStationsList.add("West Oakland"); */
         Collections.sort(allStationsList);
         int count = 0;
         for (String station:allStationsList) {

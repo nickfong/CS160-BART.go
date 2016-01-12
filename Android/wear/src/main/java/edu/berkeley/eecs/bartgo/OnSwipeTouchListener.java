@@ -26,9 +26,10 @@ import android.view.View;
 import android.view.View.OnTouchListener;
 
 /**
- * implementation code borrowed from stackoverflow
+ * A Listener class which detects and parses both touches and swipes made on the watch.
+ *
+ * Portions of the below implementation were derived from StackOverflow.
  */
-
 public class OnSwipeTouchListener implements OnTouchListener {
 
     private final GestureDetector gestureDetector;

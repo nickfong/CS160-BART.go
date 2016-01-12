@@ -26,6 +26,9 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
 
+/**
+ * A class handling the user-pacing UI and associated frontward-facing data updates.
+ */
 public class PacingView extends View{
     private static final String TAG = "PacingView";
     private static final double PI = 3.1416;
@@ -43,6 +46,19 @@ public class PacingView extends View{
     private final Paint mSecondaryWhitePaint = new Paint();
     private final Paint mMissTrainPaint = new Paint();
 
+
+
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // CONSTRUCTOR
+    ////////////////////////////////////////////////////////////////////////////////
+    /**
+     * Default PacingView constructor.  Generates a PacingView in the given Context,
+     * with the specified attributes.  Paint colors are set.
+     *
+     * @param context       The Context within which to build the PacingView.
+     * @param attrs         The specified attributes.
+     */
     public PacingView(Context context, AttributeSet attrs) {
         super(context, attrs);
         Log.v("PacingView", "constructor called");
@@ -70,6 +86,18 @@ public class PacingView extends View{
         mMissTrainPaint.setTextAlign(Paint.Align.CENTER);
     }
 
+
+
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // OVERRIDDEN METHODS (GENERAL)
+    ////////////////////////////////////////////////////////////////////////////////
+    /**
+     * Sets stroke widths, text sizes, and view dimension for the custom View.
+     *
+     * @param widthMeasureSpec      Horizontal space requirement as dictated by parent.
+     * @param heightMeasureSpec     Vertical space requirement as dictated by parent.
+     */
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         Log.v("PacingView", "on measure");
@@ -91,12 +119,17 @@ public class PacingView extends View{
         mGaugeBound.set(size / 10, size / 10, (float) (size * 0.9), (float) (size * 0.9));
     }
 
+    /**
+     * Draws the custom View on the specified Canvas.
+     *
+     * @param canvas        The Canvas to draw upon.
+     */
     @Override
     protected void onDraw(Canvas canvas) {
         Log.d(TAG, "drawing UI");
         super.onDraw(canvas);
 
-        /* draw background color*/
+        // Draw background color
         double offset = (mDepartureTimeInMillis - mArrivalTimeInMillis) / 60000;
         if (offset > 3) {
             canvas.drawColor(getResources().getColor(R.color.dull_green));
@@ -110,10 +143,10 @@ public class PacingView extends View{
         }
         float u = getWidth() / 10;
 
-        /* draw gauge arc */
+        // Draw gauge arc
         canvas.drawArc(mGaugeBound, 180, 180, false, mGaugePaint);
 
-        /* draw BART bar on the gauge */
+        // Draw BART bar on the gauge
         for (int i = 0; i < mBARTDepartureTimes.length; i++) {
             if (i == mCriticalDepartureIndex) continue;
             double diff = (mDepartureTimeInMillis - mBARTDepartureTimes[i]) / 60000;
@@ -129,7 +162,7 @@ public class PacingView extends View{
         }
         canvas.drawLine(5 * u, u / 2, 5 * u, 2 * u, mPrimaryWhitePaint);
 
-        /* draw next departure time */
+        // Draw next departure time
         if (mDidMiss) {
             canvas.drawText("Train Missed", 5 * u, (float) (7.4 * u), mMissTrainPaint);
         } else {
@@ -137,7 +170,7 @@ public class PacingView extends View{
             canvas.drawText("BART", (float) (6.8 * u), (float) (8.2 * u), mSecondaryWhitePaint);
         }
 
-        /* draw estimated arrival dot on the gauge */
+        // Draw estimated arrival dot on the gauge
         double alpha = offset * PI / 20;
         float x = (float) ((5 - 4 * java.lang.Math.sin(alpha)) * u);
         float y = (float) ((5 - 4 * java.lang.Math.cos(alpha)) * u);
@@ -150,39 +183,98 @@ public class PacingView extends View{
         }
         canvas.drawCircle(x, y, u / 2, mPrimaryWhitePaint);
 
-        /* draw estimated arrival time */
+        // Draw estimated arrival time
         if (!mDidMiss) {
             canvas.drawText(mMinutesTillArrival, (float) (3.1 * u), (float) (7.4 * u), mPrimaryWhitePaint);
             canvas.drawText("YOU", (float) (3.2 * u), (float) (8.2 * u), mSecondaryWhitePaint);
         }
     }
 
-    /* --- The methods below are useful for Patrick --- */
 
-    /* Set up the UI with a sequence of BART departures
-     * DOSE NOT UPDATE UI */
+
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // ON-SWIPE METHODS
+    ////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Updates UI to displays the previous train, if available.  Indicates swipe detection
+     * success/failure, and whether the data update merits an update in background color.
+     *
+     * @return          Success/background color update code.
+     */
+    public int onSwipeDown() {
+        if (mCriticalDepartureIndex > 0) {
+            mCriticalDepartureIndex -= 1;
+            mDepartureTimeInMillis = mBARTDepartureTimes[mCriticalDepartureIndex];
+            if (updateArrivalTime(mArrivalTimeInMillis)) {
+                return 2; // succeed AND color changed
+            } else {
+                return 1; // succeed AND color didn't change
+            }
+        }
+        return 0; // didn't succeed
+    }
+
+    /**
+     * Updates UI to displays the next train, if available.  Indicates swipe detection
+     * success/failure, and whether the data update merits an update in background color.
+     *
+     * @return          Success/background color update code.
+     */
+    /* On swipe from bottom to top -> update the UI to show the next train */
+    public int onSwipeUp() {
+        if (mCriticalDepartureIndex + 1 < mBARTDepartureTimes.length) {
+            mCriticalDepartureIndex += 1;
+            mDepartureTimeInMillis = mBARTDepartureTimes[mCriticalDepartureIndex];
+            if (updateArrivalTime(mArrivalTimeInMillis)) {
+                return 2; // succeed AND color changed
+            } else {
+                return 1; // succeed AND color didn't change
+            }
+        }
+        return 0; // didn't succeed
+    }
+
+
+
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // DATA UPDATE METHODS
+    ////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Sets global long[], mBARTDepartureTimes, to the given long[].  Note that this
+     * does NOT update the UI.
+     *
+     * @param bartDepartureArray    The data with which to update mBARTDepartureTimes.
+     */
     public void setDepartureTimes(long[] bartDepartureArray) {
         mBARTDepartureTimes = bartDepartureArray;
         mCriticalDepartureIndex = 0;
         mDepartureTimeInMillis = mBARTDepartureTimes[0];
     }
 
-    /* Update the UI to show a newer estimate of the user's arrival time
-     * Return: whether the UI background color would change at this update
-     * newEstimateInMillis: user's new estimate arrival time in milliseconds since UNIX epoch
-     * REFRESH THE ENTIRE UI */
+    /**
+     * Updates the UI to display the user's newest ETA estimate.  (Note that this update
+     * refreshes the ENTIRE UI.  Returns whether the background color would change
+     * during this update.
+     *
+     * @param newEstimateInMillis       New user ETA estimate, in millis since the UNIX epoch.
+     * @return                          A boolean indicating whether background color changes.
+     */
     public boolean updateArrivalTime(long newEstimateInMillis) {
         mArrivalTimeInMillis = newEstimateInMillis;
         mCurrentTimeInMillis = new java.util.Date().getTime();
 
-        /* get Minutes Till Arrival */
+        // Get Minutes Till Arrival
         int temp = (int) ((mArrivalTimeInMillis - mCurrentTimeInMillis) / 60000);
         mMinutesTillArrival = String.valueOf(temp);
         if (mMinutesTillArrival.length() == 1) {
             mMinutesTillArrival = "0" + mMinutesTillArrival;
         }
 
-        /* get Minutes Till Departure */
+        // Get Minutes Till Departure
         temp = (int) ((mDepartureTimeInMillis - mCurrentTimeInMillis) / 60000);
         if (temp < 0) {
             mDidMiss = true;
@@ -194,7 +286,7 @@ public class PacingView extends View{
             }
         }
 
-        /* determine if the UI color would change */
+        // Determine if the UI color would change
         long difference = mDepartureTimeInMillis - mArrivalTimeInMillis;
         int newColorState;
         if (difference > 180000) {
@@ -210,33 +302,5 @@ public class PacingView extends View{
         this.invalidate();
         Log.d("PacingView", "UI invalidated");
         return (newColorState != mCurrColorState);
-    }
-
-    /* On swipe from top to bottom -> update the UI to show the previous train */
-    public int onSwipeDown() {
-        if (mCriticalDepartureIndex > 0) {
-            mCriticalDepartureIndex -= 1;
-            mDepartureTimeInMillis = mBARTDepartureTimes[mCriticalDepartureIndex];
-            if (updateArrivalTime(mArrivalTimeInMillis)) {
-                return 2; // succeed AND color changed
-            } else {
-                return 1; // succeed AND color didn't change
-            }
-        }
-        return 0; // didn't succeed
-    }
-
-    /* On swipe from bottom to top -> update the UI to show the next train */
-    public int onSwipeUp() {
-        if (mCriticalDepartureIndex + 1 < mBARTDepartureTimes.length) {
-            mCriticalDepartureIndex += 1;
-            mDepartureTimeInMillis = mBARTDepartureTimes[mCriticalDepartureIndex];
-            if (updateArrivalTime(mArrivalTimeInMillis)) {
-                return 2; // succeed AND color changed
-            } else {
-                return 1; // succeed AND color didn't change
-            }
-        }
-        return 0; // didn't succeed
     }
 }
